@@ -18,49 +18,7 @@
             bottom: 0; 
             width: 100%; 
         }
-        .legend {
-            background: rgba(255, 255, 255, 0.9);
-            border-radius: 8px;
-            bottom: 30px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-            font: 12px/18px 'Helvetica Neue', Arial, sans-serif;
-            padding: 15px;
-            position: absolute;
-            right: 15px;
-            z-index: 1;
-            min-width: 180px;
-        }
-        .legend h4 { 
-            margin: 0 0 12px; 
-            font-size: 14px;
-            font-weight: bold;
-            color: #333;
-        }
-        .legend-item { 
-            display: flex; 
-            align-items: center; 
-            margin-bottom: 8px; 
-        }
-        .legend-item:last-child { 
-            margin-bottom: 0; 
-        }
-        .legend-color { 
-            width: 20px; 
-            height: 12px; 
-            margin-right: 8px; 
-            border-radius: 2px;
-        }
-        .legend-stroke {
-            border: 1px solid;
-            background: transparent;
-        }
-        .legend-fill {
-            opacity: 0.6;
-        }
-        .legend-label {
-            color: #555;
-            font-size: 11px;
-        }
+
         .controls {
             position: absolute;
             top: 15px;
@@ -87,7 +45,7 @@
         .layer-controls {
             background: rgba(255, 255, 255, 0.9);
             border-radius: 8px;
-            bottom: 180px;
+            bottom: 30px;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
             font: 12px/18px 'Helvetica Neue', Arial, sans-serif;
             padding: 15px;
@@ -96,16 +54,13 @@
             z-index: 1;
             min-width: 180px;
         }
-        .layer-controls h4 {
-            margin: 0 0 12px;
-            font-size: 14px;
-            font-weight: bold;
-            color: #333;
-        }
         .layer-toggle {
             display: flex;
             align-items: center;
             margin-bottom: 8px;
+        }
+        .layer-toggle:last-child {
+            margin-bottom: 0;
         }
         .layer-toggle input[type="checkbox"] {
             margin-right: 8px;
@@ -114,6 +69,127 @@
             color: #555;
             font-size: 11px;
             cursor: pointer;
+            display: flex;
+            align-items: center;
+        }
+        .color-pip {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 6px;
+            display: inline-block;
+        }
+        .color-pip.stroke {
+            border: 2px solid;
+            background: transparent;
+        }
+        .color-pip.fill {
+            opacity: 0.7;
+        }
+        
+        /* Terrain Editor Controls */
+        .terrain-controls {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            z-index: 1000;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            max-height: 80vh;
+            overflow-y: auto;
+            width: 280px;
+        }
+        .terrain-controls.collapsed {
+            width: auto;
+        }
+        .terrain-controls.collapsed .control-content {
+            display: none;
+        }
+        .control-header {
+            padding: 12px 15px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+            border-radius: 8px 8px 0 0;
+            cursor: pointer;
+            font-weight: bold;
+            color: #333;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .control-content {
+            padding: 15px;
+        }
+        .control-group {
+            margin-bottom: 20px;
+        }
+        .control-group:last-child {
+            margin-bottom: 0;
+        }
+        .control-group h4 {
+            margin: 0 0 10px 0;
+            font-size: 13px;
+            font-weight: bold;
+            color: #333;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 5px;
+        }
+        .control-item {
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .control-item label {
+            font-size: 11px;
+            color: #666;
+            margin-right: 10px;
+            min-width: 80px;
+        }
+        .control-item input[type="range"] {
+            flex: 1;
+            margin: 0 8px;
+        }
+        .control-item input[type="color"] {
+            width: 30px;
+            height: 20px;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        .control-item input[type="text"] {
+            width: 60px;
+            padding: 2px 4px;
+            font-size: 10px;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+        }
+        .control-item input[type="checkbox"] {
+            margin-right: 8px;
+        }
+        .range-value {
+            font-size: 10px;
+            color: #999;
+            min-width: 30px;
+            text-align: right;
+        }
+        .color-group {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .toggle-btn {
+            background: #007cbf;
+            color: white;
+            border: none;
+            padding: 4px 8px;
+            border-radius: 3px;
+            font-size: 10px;
+            cursor: pointer;
+        }
+        .toggle-btn:hover {
+            background: #005a8b;
         }
     </style>
 </head>
@@ -121,23 +197,109 @@
 
 <div id='map'></div>
 
-<div class='legend'>
-    <h4>Federal Lands</h4>
-    <div class='legend-item'>
-        <div class='legend-color legend-fill' style='background-color: #FFD700;'></div>
-        <span class='legend-label'>BLM All Lands</span>
+<!-- Terrain Editor Controls -->
+<div class="terrain-controls" id="terrain-controls">
+    <div class="control-header" onclick="toggleTerrainControls()">
+        <span>Terrain Controls</span>
+        <span id="collapse-icon">−</span>
     </div>
-    <div class='legend-item'>
-        <div class='legend-color legend-fill' style='background-color: #228B22;'></div>
-        <span class='legend-label'>Forest Service All</span>
-    </div>
-    <div class='legend-item'>
-        <div class='legend-color legend-stroke' style='border-color: #B8860B;'></div>
-        <span class='legend-label'>BLM Sellable</span>
-    </div>
-    <div class='legend-item'>
-        <div class='legend-color legend-stroke' style='border-color: #006400;'></div>
-        <span class='legend-label'>FS Sellable</span>
+    <div class="control-content">
+        <!-- Terrain Settings -->
+        <div class="control-group">
+            <h4>Terrain</h4>
+            <div class="control-item">
+                <input type="checkbox" id="terrain-toggle" checked>
+                <label for="terrain-toggle">Enable 3D Terrain</label>
+            </div>
+            <div class="control-item">
+                <label>Exaggeration</label>
+                <input type="range" id="terrain-exaggeration" min="0.1" max="5" step="0.1" value="3">
+                <span class="range-value" id="terrain-exaggeration-value">3</span>
+            </div>
+        </div>
+
+        <!-- Hillshade Settings -->
+        <div class="control-group">
+            <h4>Hillshade</h4>
+            <div class="control-item">
+                <input type="checkbox" id="hillshade-toggle">
+                <label for="hillshade-toggle">Enable Hillshade</label>
+            </div>
+            <div class="control-item">
+                <label>Shadow</label>
+                <div class="color-group">
+                    <input type="color" id="hillshade-shadow-color" value="#5a3f2b">
+                    <input type="text" id="hillshade-shadow-color-text" value="#5a3f2b">
+                </div>
+            </div>
+            <div class="control-item">
+                <label>Highlight</label>
+                <div class="color-group">
+                    <input type="color" id="hillshade-highlight-color" value="#f9e29c">
+                    <input type="text" id="hillshade-highlight-color-text" value="#f9e29c">
+                </div>
+            </div>
+            <div class="control-item">
+                <label>Illumination</label>
+                <input type="range" id="hillshade-illumination" min="0" max="360" step="1" value="240">
+                <span class="range-value" id="hillshade-illumination-value">240</span>
+            </div>
+            <div class="control-item">
+                <label>Exaggeration</label>
+                <input type="range" id="hillshade-exaggeration" min="0" max="2" step="0.1" value="0.8">
+                <span class="range-value" id="hillshade-exaggeration-value">0.8</span>
+            </div>
+        </div>
+
+        <!-- Sky Settings -->
+        <div class="control-group">
+            <h4>Sky & Atmosphere</h4>
+            <div class="control-item">
+                <input type="checkbox" id="sky-toggle" checked>
+                <label for="sky-toggle">Enable Sky</label>
+            </div>
+            <div class="control-item">
+                <label>Sun Intensity</label>
+                <input type="range" id="sky-sun-intensity" min="1" max="50" step="1" value="15">
+                <span class="range-value" id="sky-sun-intensity-value">15</span>
+            </div>
+            <div class="control-item">
+                <label>Sun Position X</label>
+                <input type="range" id="sky-sun-x" min="-1" max="1" step="0.1" value="0">
+                <span class="range-value" id="sky-sun-x-value">0</span>
+            </div>
+            <div class="control-item">
+                <label>Sun Position Y</label>
+                <input type="range" id="sky-sun-y" min="-1" max="1" step="0.1" value="0">
+                <span class="range-value" id="sky-sun-y-value">0</span>
+            </div>
+        </div>
+
+        <!-- Fog Settings -->
+        <div class="control-group">
+            <h4>Fog</h4>
+            <div class="control-item">
+                <input type="checkbox" id="fog-toggle">
+                <label for="fog-toggle">Enable Fog</label>
+            </div>
+            <div class="control-item">
+                <label>Color</label>
+                <div class="color-group">
+                    <input type="color" id="fog-color" value="#ffffff">
+                    <input type="text" id="fog-color-text" value="#ffffff">
+                </div>
+            </div>
+            <div class="control-item">
+                <label>Horizon Blend</label>
+                <input type="range" id="fog-horizon-blend" min="0" max="1" step="0.1" value="0.5">
+                <span class="range-value" id="fog-horizon-blend-value">0.5</span>
+            </div>
+            <div class="control-item">
+                <label>Distance</label>
+                <input type="range" id="fog-distance" min="1" max="100" step="1" value="50">
+                <span class="range-value" id="fog-distance-value">50</span>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -146,22 +308,33 @@
 </div>
 
 <div class="layer-controls">
-    <h4>Layers</h4>
-    <div class="layer-toggle">
-        <input type="checkbox" id="toggle-blm-all" checked>
-        <label for="toggle-blm-all">BLM All (Gold)</label>
-    </div>
-    <div class="layer-toggle">
-        <input type="checkbox" id="toggle-fs-all" checked>
-        <label for="toggle-fs-all">Forest Service All (Green)</label>
-    </div>
     <div class="layer-toggle">
         <input type="checkbox" id="toggle-blm-sellable" checked>
-        <label for="toggle-blm-sellable">BLM Sellable (Outline)</label>
+        <label for="toggle-blm-sellable">
+            <span class="color-pip stroke" style="border-color: #B8860B;"></span>
+            BLM Sellable
+        </label>
+    </div>
+    <div class="layer-toggle">
+        <input type="checkbox" id="toggle-blm-all" checked>
+        <label for="toggle-blm-all">
+            <span class="color-pip fill" style="background-color: #FFD700;"></span>
+            BLM All
+        </label>
     </div>
     <div class="layer-toggle">
         <input type="checkbox" id="toggle-fs-sellable" checked>
-        <label for="toggle-fs-sellable">FS Sellable (Outline)</label>
+        <label for="toggle-fs-sellable">
+            <span class="color-pip stroke" style="border-color: #006400;"></span>
+            FS Sellable
+        </label>
+    </div>
+    <div class="layer-toggle">
+        <input type="checkbox" id="toggle-fs-all" checked>
+        <label for="toggle-fs-all">
+            <span class="color-pip fill" style="background-color: #228B22;"></span>
+            FS All
+        </label>
     </div>
 </div>
 
@@ -189,7 +362,7 @@ map.on('style.load', () => {
     
     map.setTerrain({ 
         source: 'mapbox-dem', 
-        exaggeration: 1.5 
+        exaggeration: 3
     });
     
     map.addLayer({
@@ -207,19 +380,25 @@ let terrainEnabled = true;
 
 function toggleTerrain() {
     const btn = document.getElementById('terrain-btn');
+    const terrainToggle = document.getElementById('terrain-toggle');
+    
     if (terrainEnabled) {
         map.setTerrain(null);
         btn.textContent = '2D Map';
         btn.classList.remove('active');
         terrainEnabled = false;
+        if (terrainToggle) terrainToggle.checked = false;
     } else {
+        const exaggeration = document.getElementById('terrain-exaggeration') ? 
+            parseFloat(document.getElementById('terrain-exaggeration').value) : 3;
         map.setTerrain({ 
             source: 'mapbox-dem', 
-            exaggeration: 1.5 
+            exaggeration: exaggeration
         });
         btn.textContent = '3D Terrain';
         btn.classList.add('active');
         terrainEnabled = true;
+        if (terrainToggle) terrainToggle.checked = true;
     }
 }
 
@@ -411,6 +590,178 @@ map.addControl(new mapboxgl.GeolocateControl({
     trackUserLocation: true,
     showUserHeading: true
 }));
+
+// Terrain Editor Functions
+function toggleTerrainControls() {
+    const controls = document.getElementById('terrain-controls');
+    const icon = document.getElementById('collapse-icon');
+    
+    if (controls.classList.contains('collapsed')) {
+        controls.classList.remove('collapsed');
+        icon.textContent = '−';
+    } else {
+        controls.classList.add('collapsed');
+        icon.textContent = '+';
+    }
+}
+
+// Initialize range input displays
+document.addEventListener('DOMContentLoaded', function() {
+    const rangeInputs = document.querySelectorAll('input[type="range"]');
+    rangeInputs.forEach(input => {
+        const valueDisplay = document.getElementById(input.id + '-value');
+        if (valueDisplay) {
+            valueDisplay.textContent = input.value;
+            input.addEventListener('input', function() {
+                valueDisplay.textContent = this.value;
+            });
+        }
+    });
+    
+    // Color input synchronization
+    const colorInputs = document.querySelectorAll('input[type="color"]');
+    colorInputs.forEach(input => {
+        const textInput = document.getElementById(input.id + '-text');
+        if (textInput) {
+            input.addEventListener('input', () => {
+                textInput.value = input.value;
+            });
+            textInput.addEventListener('input', () => {
+                if (/^#[0-9A-F]{6}$/i.test(textInput.value)) {
+                    input.value = textInput.value;
+                }
+            });
+        }
+    });
+});
+
+// Terrain Controls
+document.getElementById('terrain-toggle').addEventListener('change', function(e) {
+    if (e.target.checked) {
+        const exaggeration = parseFloat(document.getElementById('terrain-exaggeration').value);
+        map.setTerrain({ source: 'mapbox-dem', exaggeration: exaggeration });
+    } else {
+        map.setTerrain(null);
+    }
+});
+
+document.getElementById('terrain-exaggeration').addEventListener('input', function(e) {
+    if (document.getElementById('terrain-toggle').checked) {
+        map.setTerrain({ source: 'mapbox-dem', exaggeration: parseFloat(e.target.value) });
+    }
+});
+
+// Hillshade Controls
+document.getElementById('hillshade-toggle').addEventListener('change', function(e) {
+    if (e.target.checked) {
+        applyHillshadeSettings();
+    } else {
+        removeLayerIfExists('hillshade-layer');
+    }
+});
+
+function applyHillshadeSettings() {
+    const shadowColor = document.getElementById('hillshade-shadow-color').value;
+    const highlightColor = document.getElementById('hillshade-highlight-color').value;
+    const illumination = parseFloat(document.getElementById('hillshade-illumination').value);
+    const exaggeration = parseFloat(document.getElementById('hillshade-exaggeration').value);
+    
+    removeLayerIfExists('hillshade-layer');
+    
+    map.addLayer({
+        id: 'hillshade-layer',
+        type: 'hillshade',
+        source: 'mapbox-dem',
+        paint: {
+            'hillshade-shadow-color': shadowColor,
+            'hillshade-highlight-color': highlightColor,
+            'hillshade-illumination-direction': illumination,
+            'hillshade-exaggeration': exaggeration
+        }
+    }, 'blm-all-fill');
+}
+
+['hillshade-shadow-color', 'hillshade-highlight-color', 'hillshade-illumination', 'hillshade-exaggeration'].forEach(id => {
+    document.getElementById(id).addEventListener('input', function() {
+        if (document.getElementById('hillshade-toggle').checked) {
+            applyHillshadeSettings();
+        }
+    });
+});
+
+// Sky Controls
+document.getElementById('sky-toggle').addEventListener('change', function(e) {
+    if (e.target.checked) {
+        applySkySettings();
+    } else {
+        removeLayerIfExists('sky');
+    }
+});
+
+function applySkySettings() {
+    const sunIntensity = parseFloat(document.getElementById('sky-sun-intensity').value);
+    const sunX = parseFloat(document.getElementById('sky-sun-x').value);
+    const sunY = parseFloat(document.getElementById('sky-sun-y').value);
+    
+    removeLayerIfExists('sky');
+    
+    map.addLayer({
+        id: 'sky',
+        type: 'sky',
+        paint: {
+            'sky-type': 'atmosphere',
+            'sky-atmosphere-sun': [sunX, sunY],
+            'sky-atmosphere-sun-intensity': sunIntensity
+        }
+    });
+}
+
+['sky-sun-intensity', 'sky-sun-x', 'sky-sun-y'].forEach(id => {
+    document.getElementById(id).addEventListener('input', function() {
+        if (document.getElementById('sky-toggle').checked) {
+            applySkySettings();
+        }
+    });
+});
+
+// Fog Controls
+document.getElementById('fog-toggle').addEventListener('change', function(e) {
+    if (e.target.checked) {
+        applyFogSettings();
+    } else {
+        map.setFog(null);
+    }
+});
+
+function applyFogSettings() {
+    const color = document.getElementById('fog-color').value;
+    const horizonBlend = parseFloat(document.getElementById('fog-horizon-blend').value);
+    const distance = parseFloat(document.getElementById('fog-distance').value);
+    
+    const rangeMin = 0.5;
+    const rangeMax = 0.5 + (distance / 10);
+    
+    map.setFog({
+        'color': color,
+        'horizon-blend': horizonBlend,
+        'range': [rangeMin, rangeMax]
+    });
+}
+
+['fog-color', 'fog-horizon-blend', 'fog-distance'].forEach(id => {
+    document.getElementById(id).addEventListener('input', function() {
+        if (document.getElementById('fog-toggle').checked) {
+            applyFogSettings();
+        }
+    });
+});
+
+// Helper function
+function removeLayerIfExists(layerId) {
+    if (map.getLayer(layerId)) {
+        map.removeLayer(layerId);
+    }
+}
 </script>
 
 </body>
