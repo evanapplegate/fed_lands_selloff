@@ -1,0 +1,16 @@
+# Data files
+*.gpkg
+*.geojson
+*.mbtiles
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log 

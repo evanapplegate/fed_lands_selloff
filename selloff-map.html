@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='utf-8' />
+    <title>Land Selloff Map</title>
+    <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+    <script src='https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js'></script>
+    <link href='https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css' rel='stylesheet' />
+    <style>
+        body { 
+            margin: 0; 
+            padding: 0; 
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+        }
+        #map { 
+            position: absolute; 
+            top: 0; 
+            bottom: 0; 
+            width: 100%; 
+        }
+        .legend {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 8px;
+            bottom: 30px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            font: 12px/18px 'Helvetica Neue', Arial, sans-serif;
+            padding: 15px;
+            position: absolute;
+            right: 15px;
+            z-index: 1;
+            min-width: 180px;
+        }
+        .legend h4 { 
+            margin: 0 0 12px; 
+            font-size: 14px;
+            font-weight: bold;
+            color: #333;
+        }
+        .legend-item { 
+            display: flex; 
+            align-items: center; 
+            margin-bottom: 8px; 
+        }
+        .legend-item:last-child { 
+            margin-bottom: 0; 
+        }
+        .legend-color { 
+            width: 20px; 
+            height: 12px; 
+            margin-right: 8px; 
+            border-radius: 2px;
+        }
+        .legend-stroke {
+            border: 1px solid;
+            background: transparent;
+        }
+        .legend-fill {
+            opacity: 0.6;
+        }
+        .legend-label {
+            color: #555;
+            font-size: 11px;
+        }
+        .controls {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            z-index: 1;
+        }
+        .control-button {
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            border-radius: 4px;
+            padding: 8px 12px;
+            margin-left: 5px;
+            cursor: pointer;
+            font-size: 11px;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+        }
+        .control-button:hover {
+            background: rgba(255, 255, 255, 1);
+        }
+        .control-button.active {
+            background: #007cbf;
+            color: white;
+        }
+        .layer-controls {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 8px;
+            bottom: 180px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            font: 12px/18px 'Helvetica Neue', Arial, sans-serif;
+            padding: 15px;
+            position: absolute;
+            right: 15px;
+            z-index: 1;
+            min-width: 180px;
+        }
+        .layer-controls h4 {
+            margin: 0 0 12px;
+            font-size: 14px;
+            font-weight: bold;
+            color: #333;
+        }
+        .layer-toggle {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        .layer-toggle input[type="checkbox"] {
+            margin-right: 8px;
+        }
+        .layer-toggle label {
+            color: #555;
+            font-size: 11px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+<div id='map'></div>
+
+<div class='legend'>
+    <h4>Federal Lands</h4>
+    <div class='legend-item'>
+        <div class='legend-color legend-fill' style='background-color: #FFD700;'></div>
+        <span class='legend-label'>BLM All Lands</span>
+    </div>
+    <div class='legend-item'>
+        <div class='legend-color legend-fill' style='background-color: #228B22;'></div>
+        <span class='legend-label'>Forest Service All</span>
+    </div>
+    <div class='legend-item'>
+        <div class='legend-color legend-stroke' style='border-color: #B8860B;'></div>
+        <span class='legend-label'>BLM Sellable</span>
+    </div>
+    <div class='legend-item'>
+        <div class='legend-color legend-stroke' style='border-color: #006400;'></div>
+        <span class='legend-label'>FS Sellable</span>
+    </div>
+</div>
+
+<div class='controls'>
+    <button class='control-button active' onclick='toggleTerrain()' id='terrain-btn'>3D Terrain</button>
+</div>
+
+<div class="layer-controls">
+    <h4>Layers</h4>
+    <div class="layer-toggle">
+        <input type="checkbox" id="toggle-blm-all" checked>
+        <label for="toggle-blm-all">BLM All (Gold)</label>
+    </div>
+    <div class="layer-toggle">
+        <input type="checkbox" id="toggle-fs-all" checked>
+        <label for="toggle-fs-all">Forest Service All (Green)</label>
+    </div>
+    <div class="layer-toggle">
+        <input type="checkbox" id="toggle-blm-sellable" checked>
+        <label for="toggle-blm-sellable">BLM Sellable (Outline)</label>
+    </div>
+    <div class="layer-toggle">
+        <input type="checkbox" id="toggle-fs-sellable" checked>
+        <label for="toggle-fs-sellable">FS Sellable (Outline)</label>
+    </div>
+</div>
+
+<script>
+mapboxgl.accessToken = 'pk.eyJ1Ijoiam9ubml3YWxrZXIiLCJhIjoiY2loeG82cWplMDA4N3cxa3MzZXU2N2JpYSJ9.H6vPKI0UKLv733mSCXh2Lw';
+
+const map = new mapboxgl.Map({
+    container: 'map',
+    style: 'mapbox://styles/mapbox/outdoors-v12', // Using public Mapbox style
+    center: [-120, 45], // Center on western US
+    zoom: 4, // Zoom out to see more data
+    pitch: 60,
+    bearing: 0,
+    antialias: true
+});
+
+// Add terrain and sky
+map.on('style.load', () => {
+    map.addSource('mapbox-dem', {
+        type: 'raster-dem',
+        url: 'mapbox://mapbox.mapbox-terrain-dem-v1',
+        tileSize: 512,
+        maxzoom: 14
+    });
+    
+    map.setTerrain({ 
+        source: 'mapbox-dem', 
+        exaggeration: 1.5 
+    });
+    
+    map.addLayer({
+        id: 'sky',
+        type: 'sky',
+        paint: {
+            'sky-type': 'atmosphere',
+            'sky-atmosphere-sun': [0.0, 0.0],
+            'sky-atmosphere-sun-intensity': 15
+        }
+    });
+});
+
+let terrainEnabled = true;
+
+function toggleTerrain() {
+    const btn = document.getElementById('terrain-btn');
+    if (terrainEnabled) {
+        map.setTerrain(null);
+        btn.textContent = '2D Map';
+        btn.classList.remove('active');
+        terrainEnabled = false;
+    } else {
+        map.setTerrain({ 
+            source: 'mapbox-dem', 
+            exaggeration: 1.5 
+        });
+        btn.textContent = '3D Terrain';
+        btn.classList.add('active');
+        terrainEnabled = true;
+    }
+}
+
+map.on('load', () => {
+    // Add vector tile sources
+    // Note: Serve your .mbtiles files with tileserver-gl:
+    // npm install -g tileserver-gl && tileserver-gl vector-tiles/
+    
+    map.addSource('blm-all', {
+        type: 'vector',
+        tiles: ['http://localhost:8080/data/blm_all_hires/{z}/{x}/{y}.pbf'],
+        minzoom: 0,
+        maxzoom: 14
+    });
+    
+    map.addSource('fs-all', {
+        type: 'vector',
+        tiles: ['http://localhost:8080/data/fs_all_hires/{z}/{x}/{y}.pbf'],
+        minzoom: 0,
+        maxzoom: 14
+    });
+    
+    map.addSource('blm-sellable', {
+        type: 'vector',
+        tiles: ['http://localhost:8080/data/blm_sellable_hires/{z}/{x}/{y}.pbf'],
+        minzoom: 0,
+        maxzoom: 14
+    });
+    
+    map.addSource('fs-sellable', {
+        type: 'vector',
+        tiles: ['http://localhost:8080/data/fs_sellable_hires/{z}/{x}/{y}.pbf'],
+        minzoom: 0,
+        maxzoom: 14
+    });
+    
+    // Add fill layers (all lands with multiply blend)
+    map.addLayer({
+        id: 'blm-all-fill',
+        type: 'fill',
+        source: 'blm-all',
+        'source-layer': 'blm_all',
+        paint: {
+            'fill-color': '#FFD700', // Gold
+            'fill-opacity': 0.6
+        },
+        layout: {
+            'visibility': 'visible'
+        }
+    }, 'waterway-label'); // Insert before labels
+    
+    map.addLayer({
+        id: 'fs-all-fill',
+        type: 'fill',
+        source: 'fs-all',
+        'source-layer': 'fs_all',
+        paint: {
+            'fill-color': '#228B22', // Forest Green
+            'fill-opacity': 0.6
+        },
+        layout: {
+            'visibility': 'visible'
+        }
+    }, 'waterway-label');
+    
+    // Add stroke layers (sellable lands)
+    map.addLayer({
+        id: 'blm-sellable-stroke',
+        type: 'line',
+        source: 'blm-sellable',
+        'source-layer': 'blm_sellable',
+        paint: {
+            'line-color': '#B8860B', // Dark Gold
+            'line-width': 1,
+            'line-opacity': 0.8
+        },
+        layout: {
+            'visibility': 'visible'
+        }
+    });
+    
+    map.addLayer({
+        id: 'fs-sellable-stroke',
+        type: 'line',
+        source: 'fs-sellable',
+        'source-layer': 'fs_sellable',
+        paint: {
+            'line-color': '#006400', // Dark Green
+            'line-width': 1,
+            'line-opacity': 0.8
+        },
+        layout: {
+            'visibility': 'visible'
+        }
+    });
+    
+    // Add click events for popups
+    map.on('click', 'blm-all-fill', (e) => {
+        const props = e.features[0].properties;
+        new mapboxgl.Popup()
+            .setLngLat(e.lngLat)
+            .setHTML(`
+                <h3>BLM Land</h3>
+                <p><strong>Name:</strong> ${props.NAME || 'N/A'}</p>
+                <p><strong>Acres:</strong> ${props.Acres ? Number(props.Acres).toLocaleString() : 'N/A'}</p>
+            `)
+            .addTo(map);
+    });
+    
+    map.on('click', 'fs-all-fill', (e) => {
+        const props = e.features[0].properties;
+        new mapboxgl.Popup()
+            .setLngLat(e.lngLat)
+            .setHTML(`
+                <h3>Forest Service Land</h3>
+                <p><strong>Name:</strong> ${props.NAME || props.FORESTNAME || 'N/A'}</p>
+                <p><strong>Acres:</strong> ${props.Acres ? Number(props.Acres).toLocaleString() : 'N/A'}</p>
+            `)
+            .addTo(map);
+    });
+    
+    map.on('click', 'blm-sellable-stroke', (e) => {
+        const props = e.features[0].properties;
+        new mapboxgl.Popup()
+            .setLngLat(e.lngLat)
+            .setHTML(`
+                <h3>BLM Sellable Land</h3>
+                <p><strong>Name:</strong> ${props.NAME || 'N/A'}</p>
+                <p><strong>Acres:</strong> ${props.Acres ? Number(props.Acres).toLocaleString() : 'N/A'}</p>
+                <p style="color: #B8860B;"><strong>Available for Sale</strong></p>
+            `)
+            .addTo(map);
+    });
+    
+    map.on('click', 'fs-sellable-stroke', (e) => {
+        const props = e.features[0].properties;
+        new mapboxgl.Popup()
+            .setLngLat(e.lngLat)
+            .setHTML(`
+                <h3>Forest Service Sellable Land</h3>
+                <p><strong>Name:</strong> ${props.NAME || props.FORESTNAME || 'N/A'}</p>
+                <p><strong>Acres:</strong> ${props.Acres ? Number(props.Acres).toLocaleString() : 'N/A'}</p>
+                <p style="color: #006400;"><strong>Available for Sale</strong></p>
+            `)
+            .addTo(map);
+    });
+    
+    // Change cursor on hover
+    ['blm-all-fill', 'fs-all-fill', 'blm-sellable-stroke', 'fs-sellable-stroke'].forEach(layer => {
+        map.on('mouseenter', layer, () => { 
+            map.getCanvas().style.cursor = 'pointer'; 
+        });
+        map.on('mouseleave', layer, () => { 
+            map.getCanvas().style.cursor = ''; 
+        });
+    });
+    
+    // Layer toggles
+    document.getElementById('toggle-blm-all').addEventListener('change', function(e) {
+        const visibility = e.target.checked ? 'visible' : 'none';
+        map.setLayoutProperty('blm-all-fill', 'visibility', visibility);
+    });
+    
+    document.getElementById('toggle-fs-all').addEventListener('change', function(e) {
+        const visibility = e.target.checked ? 'visible' : 'none';
+        map.setLayoutProperty('fs-all-fill', 'visibility', visibility);
+    });
+    
+    document.getElementById('toggle-blm-sellable').addEventListener('change', function(e) {
+        const visibility = e.target.checked ? 'visible' : 'none';
+        map.setLayoutProperty('blm-sellable-stroke', 'visibility', visibility);
+    });
+    
+    document.getElementById('toggle-fs-sellable').addEventListener('change', function(e) {
+        const visibility = e.target.checked ? 'visible' : 'none';
+        map.setLayoutProperty('fs-sellable-stroke', 'visibility', visibility);
+    });
+});
+
+// Navigation controls
+map.addControl(new mapboxgl.NavigationControl());
+map.addControl(new mapboxgl.FullscreenControl());
+
+// Geolocate control
+map.addControl(new mapboxgl.GeolocateControl({
+    positionOptions: {
+        enableHighAccuracy: true
+    },
+    trackUserLocation: true,
+    showUserHeading: true
+}));
+</script>
+
+</body>
+</html> 
