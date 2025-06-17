@@ -2,12 +2,13 @@ mapboxgl.accessToken = 'pk.eyJ1Ijoiam9ubml3YWxrZXIiLCJhIjoiY2loeG82cWplMDA4N3cxa
 
 const map = new mapboxgl.Map({
     container: 'map',
-    style: 'mapbox://styles/mapbox/outdoors-v12', // Using public Mapbox style
+    style: 'mapbox://styles/mapbox/cjerxnqt3cgvp2rmyuxbeqme7', // Cali Terrain style
     center: [-120, 45], // Center on western US
     zoom: 4, // Zoom out to see more data
     pitch: 60,
     bearing: 0,
-    antialias: true
+    antialias: true,
+    projection: 'globe' // Force globe projection
 });
 
 // Add terrain and sky
@@ -62,121 +63,8 @@ function toggleTerrain() {
 }
 
 map.on('load', () => {
-    // Add vector tile sources
-    // Note: Serve your .mbtiles files with tileserver-gl:
-    // npm install -g tileserver-gl && tileserver-gl vector-tiles/
-    
-    map.addSource('blm-all', {
-        type: 'vector',
-        tiles: ['http://localhost:8080/data/blm_all_hires/{z}/{x}/{y}.pbf'],
-        minzoom: 0,
-        maxzoom: 14
-    });
-    
-    map.addSource('fs-all', {
-        type: 'vector',
-        tiles: ['http://localhost:8080/data/fs_all_hires/{z}/{x}/{y}.pbf'],
-        minzoom: 0,
-        maxzoom: 14
-    });
-    
-    map.addSource('blm-sellable', {
-        type: 'vector',
-        tiles: ['http://localhost:8080/data/blm_sellable_hires/{z}/{x}/{y}.pbf'],
-        minzoom: 0,
-        maxzoom: 14
-    });
-    
-    map.addSource('fs-sellable', {
-        type: 'vector',
-        tiles: ['http://localhost:8080/data/fs_sellable_hires/{z}/{x}/{y}.pbf'],
-        minzoom: 0,
-        maxzoom: 14
-    });
-    
-    // Add fill layers (all lands with multiply blend)
-    map.addLayer({
-        id: 'blm-all-fill',
-        type: 'fill',
-        source: 'blm-all',
-        'source-layer': 'blm_all',
-        paint: {
-            'fill-color': '#FFD700', // Gold
-            'fill-opacity': 0.6
-        },
-        layout: {
-            'visibility': 'visible'
-        }
-    }, 'waterway-label'); // Insert before labels
-    
-    map.addLayer({
-        id: 'fs-all-fill',
-        type: 'fill',
-        source: 'fs-all',
-        'source-layer': 'fs_all',
-        paint: {
-            'fill-color': '#228B22', // Forest Green
-            'fill-opacity': 0.6
-        },
-        layout: {
-            'visibility': 'visible'
-        }
-    }, 'waterway-label');
-    
-    // Add stroke layers (sellable lands)
-    map.addLayer({
-        id: 'blm-sellable-stroke',
-        type: 'line',
-        source: 'blm-sellable',
-        'source-layer': 'blm_sellable',
-        paint: {
-            'line-color': '#B8860B', // Dark Gold
-            'line-width': 1,
-            'line-opacity': 0.8
-        },
-        layout: {
-            'visibility': 'visible'
-        }
-    });
-    
-    map.addLayer({
-        id: 'fs-sellable-stroke',
-        type: 'line',
-        source: 'fs-sellable',
-        'source-layer': 'fs_sellable',
-        paint: {
-            'line-color': '#006400', // Dark Green
-            'line-width': 1,
-            'line-opacity': 0.8
-        },
-        layout: {
-            'visibility': 'visible'
-        }
-    });
-    
-        // Click popups disabled per user request
-
-    // Add forest name labels layer
-    map.addLayer({
-        id: 'fs-labels',
-        type: 'symbol',
-        source: 'fs-all',
-        'source-layer': 'fs_all',
-        layout: {
-            'text-field': ['get', 'FORESTNAME'],
-            'text-font': ['Open Sans Bold', 'Arial Unicode MS Bold'],
-            'text-size': 10,
-            'text-offset': [0, 0],
-            'text-anchor': 'center',
-            'visibility': 'visible'
-        },
-        paint: {
-            'text-color': '#ffffff',
-            'text-halo-color': '#228B22',
-            'text-halo-width': 1
-        },
-        minzoom: 4
-    });
+    // Use the consolidated layer creation function
+    addVectorLayers();
     
     // Change cursor on hover
     ['blm-all-fill', 'fs-all-fill', 'blm-sellable-stroke', 'fs-sellable-stroke'].forEach(layer => {
@@ -191,27 +79,37 @@ map.on('load', () => {
     // Layer toggles
     document.getElementById('toggle-blm-all').addEventListener('change', function(e) {
         const visibility = e.target.checked ? 'visible' : 'none';
-        map.setLayoutProperty('blm-all-fill', 'visibility', visibility);
+        if (map.getLayer('blm-all-fill')) {
+            map.setLayoutProperty('blm-all-fill', 'visibility', visibility);
+        }
     });
     
     document.getElementById('toggle-fs-all').addEventListener('change', function(e) {
         const visibility = e.target.checked ? 'visible' : 'none';
-        map.setLayoutProperty('fs-all-fill', 'visibility', visibility);
+        if (map.getLayer('fs-all-fill')) {
+            map.setLayoutProperty('fs-all-fill', 'visibility', visibility);
+        }
     });
     
     document.getElementById('toggle-blm-sellable').addEventListener('change', function(e) {
         const visibility = e.target.checked ? 'visible' : 'none';
-        map.setLayoutProperty('blm-sellable-stroke', 'visibility', visibility);
+        if (map.getLayer('blm-sellable-stroke')) {
+            map.setLayoutProperty('blm-sellable-stroke', 'visibility', visibility);
+        }
     });
     
     document.getElementById('toggle-fs-sellable').addEventListener('change', function(e) {
         const visibility = e.target.checked ? 'visible' : 'none';
-        map.setLayoutProperty('fs-sellable-stroke', 'visibility', visibility);
+        if (map.getLayer('fs-sellable-stroke')) {
+            map.setLayoutProperty('fs-sellable-stroke', 'visibility', visibility);
+        }
     });
     
     document.getElementById('toggle-fs-labels').addEventListener('change', function(e) {
         const visibility = e.target.checked ? 'visible' : 'none';
-        map.setLayoutProperty('fs-labels', 'visibility', visibility);
+        if (map.getLayer('fs-labels')) {
+            map.setLayoutProperty('fs-labels', 'visibility', visibility);
+        }
     });
 });
 
@@ -405,10 +303,25 @@ document.getElementById('map-style-select').addEventListener('change', function(
     const newStyle = e.target.value;
     const currentLayers = getCurrentLayerStates();
     
+    // Preserve current view state
+    const currentCenter = map.getCenter();
+    const currentZoom = map.getZoom();
+    const currentBearing = map.getBearing();
+    const currentPitch = map.getPitch();
+    
     map.setStyle(newStyle);
     
     // Re-add layers after style loads
-    map.once('styledata', function() {
+    map.once('style.load', function() {
+        // Force globe projection for all styles
+        map.setProjection('globe');
+        
+        // Restore view state
+        map.setCenter(currentCenter);
+        map.setZoom(currentZoom);
+        map.setBearing(currentBearing);
+        map.setPitch(currentPitch);
+        
         // Re-add DEM source
         if (!map.getSource('mapbox-dem')) {
             map.addSource('mapbox-dem', {
@@ -428,8 +341,10 @@ document.getElementById('map-style-select').addEventListener('change', function(
         // Re-add vector sources and layers
         addVectorLayers();
         
-        // Restore layer states
-        restoreLayerStates(currentLayers);
+        // Restore layer states after a brief delay to ensure layers are created
+        setTimeout(() => {
+            restoreLayerStates(currentLayers);
+        }, 100);
         
         // Re-apply custom effects
         if (document.getElementById('hillshade-toggle').checked) {
@@ -449,22 +364,32 @@ function getCurrentLayerStates() {
         blmAll: document.getElementById('toggle-blm-all').checked,
         fsAll: document.getElementById('toggle-fs-all').checked,
         blmSellable: document.getElementById('toggle-blm-sellable').checked,
-        fsSellable: document.getElementById('toggle-fs-sellable').checked
+        fsSellable: document.getElementById('toggle-fs-sellable').checked,
+        fsLabels: document.getElementById('toggle-fs-labels').checked
     };
 }
 
 function restoreLayerStates(states) {
-    if (map.getLayer('blm-all-fill')) {
-        map.setLayoutProperty('blm-all-fill', 'visibility', states.blmAll ? 'visible' : 'none');
-    }
-    if (map.getLayer('fs-all-fill')) {
-        map.setLayoutProperty('fs-all-fill', 'visibility', states.fsAll ? 'visible' : 'none');
-    }
-    if (map.getLayer('blm-sellable-stroke')) {
-        map.setLayoutProperty('blm-sellable-stroke', 'visibility', states.blmSellable ? 'visible' : 'none');
-    }
-    if (map.getLayer('fs-sellable-stroke')) {
-        map.setLayoutProperty('fs-sellable-stroke', 'visibility', states.fsSellable ? 'visible' : 'none');
+    try {
+        if (map.getLayer('blm-all-fill')) {
+            map.setLayoutProperty('blm-all-fill', 'visibility', states.blmAll ? 'visible' : 'none');
+        }
+        if (map.getLayer('fs-all-fill')) {
+            map.setLayoutProperty('fs-all-fill', 'visibility', states.fsAll ? 'visible' : 'none');
+        }
+        if (map.getLayer('blm-sellable-stroke')) {
+            map.setLayoutProperty('blm-sellable-stroke', 'visibility', states.blmSellable ? 'visible' : 'none');
+        }
+        if (map.getLayer('fs-sellable-stroke')) {
+            map.setLayoutProperty('fs-sellable-stroke', 'visibility', states.fsSellable ? 'visible' : 'none');
+        }
+        if (map.getLayer('fs-labels')) {
+            map.setLayoutProperty('fs-labels', 'visibility', states.fsLabels ? 'visible' : 'none');
+        }
+    } catch (error) {
+        console.warn('Error restoring layer states:', error);
+        // Retry after another delay if layers aren't ready
+        setTimeout(() => restoreLayerStates(states), 200);
     }
 }
 
@@ -506,16 +431,18 @@ function addVectorLayers() {
         });
     }
 
-    // Add layers with current styling
+    // Add layers with current styling (fallback to defaults if controls not available)
     if (!map.getLayer('blm-all-fill')) {
+        const blmColorEl = document.getElementById('blm-all-color');
+        const blmOpacityEl = document.getElementById('blm-all-opacity');
         map.addLayer({
             id: 'blm-all-fill',
             type: 'fill',
             source: 'blm-all',
             'source-layer': 'blm_all',
             paint: {
-                'fill-color': document.getElementById('blm-all-color').value,
-                'fill-opacity': parseFloat(document.getElementById('blm-all-opacity').value)
+                'fill-color': blmColorEl ? blmColorEl.value : '#FFD700',
+                'fill-opacity': blmOpacityEl ? parseFloat(blmOpacityEl.value) : 0.6
             },
             layout: {
                 'visibility': 'visible'
@@ -524,14 +451,16 @@ function addVectorLayers() {
     }
     
     if (!map.getLayer('fs-all-fill')) {
+        const fsColorEl = document.getElementById('fs-all-color');
+        const fsOpacityEl = document.getElementById('fs-all-opacity');
         map.addLayer({
             id: 'fs-all-fill',
             type: 'fill',
             source: 'fs-all',
             'source-layer': 'fs_all',
             paint: {
-                'fill-color': document.getElementById('fs-all-color').value,
-                'fill-opacity': parseFloat(document.getElementById('fs-all-opacity').value)
+                'fill-color': fsColorEl ? fsColorEl.value : '#228B22',
+                'fill-opacity': fsOpacityEl ? parseFloat(fsOpacityEl.value) : 0.6
             },
             layout: {
                 'visibility': 'visible'
@@ -540,14 +469,16 @@ function addVectorLayers() {
     }
     
     if (!map.getLayer('blm-sellable-stroke')) {
+        const blmSellColorEl = document.getElementById('blm-sellable-color');
+        const blmSellWidthEl = document.getElementById('blm-sellable-width');
         map.addLayer({
             id: 'blm-sellable-stroke',
             type: 'line',
             source: 'blm-sellable',
             'source-layer': 'blm_sellable',
             paint: {
-                'line-color': document.getElementById('blm-sellable-color').value,
-                'line-width': parseFloat(document.getElementById('blm-sellable-width').value),
+                'line-color': blmSellColorEl ? blmSellColorEl.value : '#B8860B',
+                'line-width': blmSellWidthEl ? parseFloat(blmSellWidthEl.value) : 1,
                 'line-opacity': 0.8
             },
             layout: {
@@ -557,14 +488,16 @@ function addVectorLayers() {
     }
     
     if (!map.getLayer('fs-sellable-stroke')) {
+        const fsSellColorEl = document.getElementById('fs-sellable-color');
+        const fsSellWidthEl = document.getElementById('fs-sellable-width');
         map.addLayer({
             id: 'fs-sellable-stroke',
             type: 'line',
             source: 'fs-sellable',
             'source-layer': 'fs_sellable',
             paint: {
-                'line-color': document.getElementById('fs-sellable-color').value,
-                'line-width': parseFloat(document.getElementById('fs-sellable-width').value),
+                'line-color': fsSellColorEl ? fsSellColorEl.value : '#006400',
+                'line-width': fsSellWidthEl ? parseFloat(fsSellWidthEl.value) : 1,
                 'line-opacity': 0.8
             },
             layout: {
