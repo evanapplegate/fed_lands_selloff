@@ -11,11 +11,46 @@ body {
     width: 100%; 
 }
 
-.controls {
+/* Search Bar */
+.search-container {
     position: absolute;
     top: 15px;
     right: 15px;
-    z-index: 1;
+    z-index: 1000;
+    display: flex;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 4px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    overflow: hidden;
+    margin-right: 50px; /* Space for zoom controls */
+}
+
+#search-input {
+    border: none;
+    padding: 10px 12px;
+    font-size: 12px;
+    width: 200px;
+    outline: none;
+    background: transparent;
+}
+
+#search-button {
+    border: none;
+    background: #007cbf;
+    color: white;
+    padding: 10px 12px;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+#search-button:hover {
+    background: #0056b3;
+}
+
+/* Hide default Mapbox controls */
+.mapboxgl-ctrl-fullscreen,
+.mapboxgl-ctrl-geolocate {
+    display: none !important;
 }
 
 .control-button {

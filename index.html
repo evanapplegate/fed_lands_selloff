@@ -13,12 +13,89 @@
 <div id='map'></div>
 
 <!-- Terrain Editor Controls -->
-<div class="terrain-controls" id="terrain-controls">
+<div class="terrain-controls collapsed" id="terrain-controls">
     <div class="control-header" onclick="toggleTerrainControls()">
         <span>Terrain Controls</span>
-        <span id="collapse-icon">−</span>
+        <span id="collapse-icon">+</span>
     </div>
     <div class="control-content">
+        <!-- Map Style Settings -->
+        <div class="control-group">
+            <h4>Map Style</h4>
+            <div class="control-item">
+                <label>Base Style</label>
+                <select id="map-style-select">
+                    <option value="mapbox://styles/mapbox/cjerxnqt3cgvp2rmyuxbeqme7" selected>Cali Terrain</option>
+                    <option value="mapbox://styles/mapbox/outdoors-v12">Outdoors</option>
+                    <option value="mapbox://styles/mapbox/satellite-v9">Satellite</option>
+                    <option value="mapbox://styles/mapbox/satellite-streets-v12">Satellite Streets</option>
+                    <option value="mapbox://styles/mapbox/light-v11">Light</option>
+                    <option value="mapbox://styles/mapbox/dark-v11">Dark</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Layer Styling -->
+        <div class="control-group">
+            <h4>Layer Styling</h4>
+            
+            <!-- BLM All Styling -->
+            <div class="control-item">
+                <label>BLM All Color</label>
+                <div class="color-group">
+                    <input type="color" id="blm-all-color" value="#FFD700">
+                    <input type="text" id="blm-all-color-text" value="#FFD700">
+                </div>
+            </div>
+            <div class="control-item">
+                <label>BLM All Opacity</label>
+                <input type="range" id="blm-all-opacity" min="0" max="1" step="0.1" value="0.3">
+                <span class="range-value" id="blm-all-opacity-value">0.6</span>
+            </div>
+
+            <!-- FS All Styling -->
+            <div class="control-item">
+                <label>FS All Color</label>
+                <div class="color-group">
+                    <input type="color" id="fs-all-color" value="#228B22">
+                    <input type="text" id="fs-all-color-text" value="#228B22">
+                </div>
+            </div>
+            <div class="control-item">
+                <label>FS All Opacity</label>
+                <input type="range" id="fs-all-opacity" min="0" max="1" step="0.1" value="0.3">
+                <span class="range-value" id="fs-all-opacity-value">0.6</span>
+            </div>
+
+            <!-- BLM Sellable Styling -->
+            <div class="control-item">
+                <label>BLM Sellable Color</label>
+                <div class="color-group">
+                    <input type="color" id="blm-sellable-color" value="#FFB400">
+                    <input type="text" id="blm-sellable-color-text" value="#FFB400">
+                </div>
+            </div>
+            <div class="control-item">
+                <label>BLM Sellable Opacity</label>
+                <input type="range" id="blm-sellable-opacity" min="0" max="1" step="0.1" value="0.6">
+                <span class="range-value" id="blm-sellable-opacity-value">0.6</span>
+            </div>
+
+            <!-- FS Sellable Styling -->
+            <div class="control-item">
+                <label>FS Sellable Color</label>
+                <div class="color-group">
+                    <input type="color" id="fs-sellable-color" value="#126612">
+                    <input type="text" id="fs-sellable-color-text" value="#126612">
+                </div>
+            </div>
+            <div class="control-item">
+                <label>FS Sellable Opacity</label>
+                <input type="range" id="fs-sellable-opacity" min="0" max="1" step="0.1" value="0.6">
+                <span class="range-value" id="fs-sellable-opacity-value">0.6</span>
+            </div>
+        </div>
+
         <!-- Terrain Settings -->
         <div class="control-group">
             <h4>Terrain</h4>
@@ -115,95 +192,20 @@
                 <span class="range-value" id="fog-distance-value">50</span>
             </div>
         </div>
-
-        <!-- Map Style Settings -->
-        <div class="control-group">
-            <h4>Map Style</h4>
-            <div class="control-item">
-                <label>Base Style</label>
-                <select id="map-style-select">
-                    <option value="mapbox://styles/mapbox/cjerxnqt3cgvp2rmyuxbeqme7" selected>Cali Terrain</option>
-                    <option value="mapbox://styles/mapbox/outdoors-v12">Outdoors</option>
-                    <option value="mapbox://styles/mapbox/satellite-v9">Satellite</option>
-                    <option value="mapbox://styles/mapbox/satellite-streets-v12">Satellite Streets</option>
-                    <option value="mapbox://styles/mapbox/light-v11">Light</option>
-                    <option value="mapbox://styles/mapbox/dark-v11">Dark</option>
-                </select>
-            </div>
-        </div>
-
-        <!-- Layer Styling -->
-        <div class="control-group">
-            <h4>Layer Styling</h4>
-            
-            <!-- BLM All Styling -->
-            <div class="control-item">
-                <label>BLM All Color</label>
-                <div class="color-group">
-                    <input type="color" id="blm-all-color" value="#FFD700">
-                    <input type="text" id="blm-all-color-text" value="#FFD700">
-                </div>
-            </div>
-            <div class="control-item">
-                <label>BLM All Opacity</label>
-                <input type="range" id="blm-all-opacity" min="0" max="1" step="0.1" value="0.6">
-                <span class="range-value" id="blm-all-opacity-value">0.6</span>
-            </div>
-
-            <!-- FS All Styling -->
-            <div class="control-item">
-                <label>FS All Color</label>
-                <div class="color-group">
-                    <input type="color" id="fs-all-color" value="#228B22">
-                    <input type="text" id="fs-all-color-text" value="#228B22">
-                </div>
-            </div>
-            <div class="control-item">
-                <label>FS All Opacity</label>
-                <input type="range" id="fs-all-opacity" min="0" max="1" step="0.1" value="0.6">
-                <span class="range-value" id="fs-all-opacity-value">0.6</span>
-            </div>
-
-            <!-- BLM Sellable Styling -->
-            <div class="control-item">
-                <label>BLM Sellable Color</label>
-                <div class="color-group">
-                    <input type="color" id="blm-sellable-color" value="#B8860B">
-                    <input type="text" id="blm-sellable-color-text" value="#B8860B">
-                </div>
-            </div>
-            <div class="control-item">
-                <label>BLM Sellable Width</label>
-                <input type="range" id="blm-sellable-width" min="0.5" max="5" step="0.5" value="1">
-                <span class="range-value" id="blm-sellable-width-value">1</span>
-            </div>
-
-            <!-- FS Sellable Styling -->
-            <div class="control-item">
-                <label>FS Sellable Color</label>
-                <div class="color-group">
-                    <input type="color" id="fs-sellable-color" value="#006400">
-                    <input type="text" id="fs-sellable-color-text" value="#006400">
-                </div>
-            </div>
-            <div class="control-item">
-                <label>FS Sellable Width</label>
-                <input type="range" id="fs-sellable-width" min="0.5" max="5" step="0.5" value="1">
-                <span class="range-value" id="fs-sellable-width-value">1</span>
-            </div>
-        </div>
     </div>
 </div>
 
-<div class='controls'>
-    <button class='control-button active' onclick='toggleTerrain()' id='terrain-btn'>3D Terrain</button>
+<!-- Search Bar -->
+<div class="search-container">
+    <input type="text" id="search-input" placeholder="Search locations..." />
+    <button id="search-button">🔍</button>
 </div>
 
 <div class="layer-controls">
     <div class="layer-toggle">
         <input type="checkbox" id="toggle-blm-sellable" checked>
         <label for="toggle-blm-sellable">
-            <span class="color-pip stroke" style="border-color: #B8860B;"></span>
+            <span class="color-pip fill" style="background-color: #FFB400;"></span>
             BLM Sellable
         </label>
     </div>
@@ -217,7 +219,7 @@
     <div class="layer-toggle">
         <input type="checkbox" id="toggle-fs-sellable" checked>
         <label for="toggle-fs-sellable">
-            <span class="color-pip stroke" style="border-color: #006400;"></span>
+            <span class="color-pip fill" style="background-color: #126612;"></span>
             FS Sellable
         </label>
     </div>

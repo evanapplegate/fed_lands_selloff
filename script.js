@@ -3,9 +3,9 @@ mapboxgl.accessToken = 'pk.eyJ1Ijoiam9ubml3YWxrZXIiLCJhIjoiY2loeG82cWplMDA4N3cxa
 const map = new mapboxgl.Map({
     container: 'map',
     style: 'mapbox://styles/mapbox/cjerxnqt3cgvp2rmyuxbeqme7', // Cali Terrain style
-    center: [-120, 45], // Center on western US
-    zoom: 4, // Zoom out to see more data
-    pitch: 60,
+    center: [-114.28373454043344, 41.22408051430463], // Centered on specified coordinates
+    zoom: 3, // Initial zoom level
+    pitch: 0, // No tilt
     bearing: 0,
     antialias: true,
     projection: 'globe' // Force globe projection
@@ -36,38 +36,65 @@ map.on('style.load', () => {
     });
 });
 
-let terrainEnabled = true;
-
-function toggleTerrain() {
-    const btn = document.getElementById('terrain-btn');
-    const terrainToggle = document.getElementById('terrain-toggle');
+// Search functionality
+function initializeSearch() {
+    const searchInput = document.getElementById('search-input');
+    const searchButton = document.getElementById('search-button');
     
-    if (terrainEnabled) {
-        map.setTerrain(null);
-        btn.textContent = '2D Map';
-        btn.classList.remove('active');
-        terrainEnabled = false;
-        if (terrainToggle) terrainToggle.checked = false;
-    } else {
-        const exaggeration = document.getElementById('terrain-exaggeration') ? 
-            parseFloat(document.getElementById('terrain-exaggeration').value) : 3;
-        map.setTerrain({ 
-            source: 'mapbox-dem', 
-            exaggeration: exaggeration
-        });
-        btn.textContent = '3D Terrain';
-        btn.classList.add('active');
-        terrainEnabled = true;
-        if (terrainToggle) terrainToggle.checked = true;
+    function performSearch() {
+        const query = searchInput.value.trim();
+        if (!query) return;
+        
+        // Use Mapbox Geocoding API
+        const geocodeUrl = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?access_token=${mapboxgl.accessToken}&country=US&types=place,locality,neighborhood,address`;
+        
+        fetch(geocodeUrl)
+            .then(response => response.json())
+            .then(data => {
+                if (data.features && data.features.length > 0) {
+                    const feature = data.features[0];
+                    const [lng, lat] = feature.center;
+                    
+                    map.flyTo({
+                        center: [lng, lat],
+                        zoom: Math.max(map.getZoom(), 10),
+                        duration: 2000
+                    });
+                    
+                    // Optional: Add a temporary marker
+                    const marker = new mapboxgl.Marker()
+                        .setLngLat([lng, lat])
+                        .addTo(map);
+                    
+                    // Remove marker after 3 seconds
+                    setTimeout(() => marker.remove(), 3000);
+                } else {
+                    alert('Location not found');
+                }
+            })
+            .catch(error => {
+                console.error('Search error:', error);
+                alert('Search failed');
+            });
     }
+    
+    searchButton.addEventListener('click', performSearch);
+    searchInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            performSearch();
+        }
+    });
 }
 
 map.on('load', () => {
     // Use the consolidated layer creation function
     addVectorLayers();
     
+    // Initialize search functionality
+    initializeSearch();
+    
     // Change cursor on hover
-    ['blm-all-fill', 'fs-all-fill', 'blm-sellable-stroke', 'fs-sellable-stroke'].forEach(layer => {
+    ['blm-all-fill', 'fs-all-fill', 'blm-sellable-fill', 'fs-sellable-fill'].forEach(layer => {
         map.on('mouseenter', layer, () => { 
             map.getCanvas().style.cursor = 'pointer'; 
         });
@@ -93,16 +120,16 @@ map.on('load', () => {
     
     document.getElementById('toggle-blm-sellable').addEventListener('change', function(e) {
         const visibility = e.target.checked ? 'visible' : 'none';
-        if (map.getLayer('blm-sellable-stroke')) {
-            map.setLayoutProperty('blm-sellable-stroke', 'visibility', visibility);
-        }
+            if (map.getLayer('blm-sellable-fill')) {
+        map.setLayoutProperty('blm-sellable-fill', 'visibility', visibility);
+    }
     });
     
     document.getElementById('toggle-fs-sellable').addEventListener('change', function(e) {
         const visibility = e.target.checked ? 'visible' : 'none';
-        if (map.getLayer('fs-sellable-stroke')) {
-            map.setLayoutProperty('fs-sellable-stroke', 'visibility', visibility);
-        }
+            if (map.getLayer('fs-sellable-fill')) {
+        map.setLayoutProperty('fs-sellable-fill', 'visibility', visibility);
+    }
     });
     
     document.getElementById('toggle-fs-labels').addEventListener('change', function(e) {
@@ -113,17 +140,10 @@ map.on('load', () => {
     });
 });
 
-// Navigation controls
-map.addControl(new mapboxgl.NavigationControl());
-map.addControl(new mapboxgl.FullscreenControl());
-
-// Geolocate control
-map.addControl(new mapboxgl.GeolocateControl({
-    positionOptions: {
-        enableHighAccuracy: true
-    },
-    trackUserLocation: true,
-    showUserHeading: true
+// Navigation controls (zoom and compass)
+map.addControl(new mapboxgl.NavigationControl({
+    showCompass: true,
+    showZoom: true
 }));
 
 // Terrain Editor Functions
@@ -377,12 +397,12 @@ function restoreLayerStates(states) {
         if (map.getLayer('fs-all-fill')) {
             map.setLayoutProperty('fs-all-fill', 'visibility', states.fsAll ? 'visible' : 'none');
         }
-        if (map.getLayer('blm-sellable-stroke')) {
-            map.setLayoutProperty('blm-sellable-stroke', 'visibility', states.blmSellable ? 'visible' : 'none');
-        }
-        if (map.getLayer('fs-sellable-stroke')) {
-            map.setLayoutProperty('fs-sellable-stroke', 'visibility', states.fsSellable ? 'visible' : 'none');
-        }
+            if (map.getLayer('blm-sellable-fill')) {
+        map.setLayoutProperty('blm-sellable-fill', 'visibility', states.blmSellable ? 'visible' : 'none');
+    }
+            if (map.getLayer('fs-sellable-fill')) {
+        map.setLayoutProperty('fs-sellable-fill', 'visibility', states.fsSellable ? 'visible' : 'none');
+    }
         if (map.getLayer('fs-labels')) {
             map.setLayoutProperty('fs-labels', 'visibility', states.fsLabels ? 'visible' : 'none');
         }
@@ -468,18 +488,17 @@ function addVectorLayers() {
         });
     }
     
-    if (!map.getLayer('blm-sellable-stroke')) {
+    if (!map.getLayer('blm-sellable-fill')) {
         const blmSellColorEl = document.getElementById('blm-sellable-color');
-        const blmSellWidthEl = document.getElementById('blm-sellable-width');
+        const blmSellOpacityEl = document.getElementById('blm-sellable-opacity');
         map.addLayer({
-            id: 'blm-sellable-stroke',
-            type: 'line',
+            id: 'blm-sellable-fill',
+            type: 'fill',
             source: 'blm-sellable',
             'source-layer': 'blm_sellable',
             paint: {
-                'line-color': blmSellColorEl ? blmSellColorEl.value : '#B8860B',
-                'line-width': blmSellWidthEl ? parseFloat(blmSellWidthEl.value) : 1,
-                'line-opacity': 0.8
+                'fill-color': blmSellColorEl ? blmSellColorEl.value : '#FFB400',
+                'fill-opacity': blmSellOpacityEl ? parseFloat(blmSellOpacityEl.value) : 0.6
             },
             layout: {
                 'visibility': 'visible'
@@ -487,18 +506,17 @@ function addVectorLayers() {
         });
     }
     
-    if (!map.getLayer('fs-sellable-stroke')) {
+    if (!map.getLayer('fs-sellable-fill')) {
         const fsSellColorEl = document.getElementById('fs-sellable-color');
-        const fsSellWidthEl = document.getElementById('fs-sellable-width');
+        const fsSellOpacityEl = document.getElementById('fs-sellable-opacity');
         map.addLayer({
-            id: 'fs-sellable-stroke',
-            type: 'line',
+            id: 'fs-sellable-fill',
+            type: 'fill',
             source: 'fs-sellable',
             'source-layer': 'fs_sellable',
             paint: {
-                'line-color': fsSellColorEl ? fsSellColorEl.value : '#006400',
-                'line-width': fsSellWidthEl ? parseFloat(fsSellWidthEl.value) : 1,
-                'line-opacity': 0.8
+                'fill-color': fsSellColorEl ? fsSellColorEl.value : '#126612',
+                'fill-opacity': fsSellOpacityEl ? parseFloat(fsSellOpacityEl.value) : 0.6
             },
             layout: {
                 'visibility': 'visible'
@@ -511,7 +529,7 @@ function addVectorLayers() {
         map.addLayer({
             id: 'fs-labels',
             type: 'symbol',
-            source: 'fs-all',
+            source: 'fs-all',   
             'source-layer': 'fs_all',
             layout: {
                 'text-field': ['get', 'FORESTNAME'],
@@ -523,8 +541,8 @@ function addVectorLayers() {
             },
             paint: {
                 'text-color': '#ffffff',
-                'text-halo-color': '#228B22',
-                'text-halo-width': 1
+                'text-halo-color': '#989d6c',
+                'text-halo-width': .5
             },
             minzoom: 4
         });
@@ -591,19 +609,19 @@ document.getElementById('fs-all-color-text').addEventListener('input', function(
     }
 });
 
-['blm-sellable-color', 'blm-sellable-width'].forEach(id => {
+['blm-sellable-color', 'blm-sellable-opacity'].forEach(id => {
     document.getElementById(id).addEventListener('input', function() {
-        if (map.getLayer('blm-sellable-stroke')) {
+        if (map.getLayer('blm-sellable-fill')) {
             if (id.includes('color')) {
-                map.setPaintProperty('blm-sellable-stroke', 'line-color', this.value);
+                map.setPaintProperty('blm-sellable-fill', 'fill-color', this.value);
                 // Update color pip in layer controls
                 const pip = document.querySelector('#toggle-blm-sellable + label .color-pip');
-                if (pip) pip.style.borderColor = this.value;
+                if (pip) pip.style.backgroundColor = this.value;
                 // Update text input
                 const textInput = document.getElementById(id + '-text');
                 if (textInput) textInput.value = this.value;
             } else {
-                map.setPaintProperty('blm-sellable-stroke', 'line-width', parseFloat(this.value));
+                map.setPaintProperty('blm-sellable-fill', 'fill-opacity', parseFloat(this.value));
             }
         }
     });
@@ -612,27 +630,27 @@ document.getElementById('fs-all-color-text').addEventListener('input', function(
 document.getElementById('blm-sellable-color-text').addEventListener('input', function() {
     if (/^#[0-9A-F]{6}$/i.test(this.value)) {
         document.getElementById('blm-sellable-color').value = this.value;
-        if (map.getLayer('blm-sellable-stroke')) {
-            map.setPaintProperty('blm-sellable-stroke', 'line-color', this.value);
+        if (map.getLayer('blm-sellable-fill')) {
+            map.setPaintProperty('blm-sellable-fill', 'fill-color', this.value);
             const pip = document.querySelector('#toggle-blm-sellable + label .color-pip');
-            if (pip) pip.style.borderColor = this.value;
+            if (pip) pip.style.backgroundColor = this.value;
         }
     }
 });
 
-['fs-sellable-color', 'fs-sellable-width'].forEach(id => {
+['fs-sellable-color', 'fs-sellable-opacity'].forEach(id => {
     document.getElementById(id).addEventListener('input', function() {
-        if (map.getLayer('fs-sellable-stroke')) {
+        if (map.getLayer('fs-sellable-fill')) {
             if (id.includes('color')) {
-                map.setPaintProperty('fs-sellable-stroke', 'line-color', this.value);
+                map.setPaintProperty('fs-sellable-fill', 'fill-color', this.value);
                 // Update color pip in layer controls
                 const pip = document.querySelector('#toggle-fs-sellable + label .color-pip');
-                if (pip) pip.style.borderColor = this.value;
+                if (pip) pip.style.backgroundColor = this.value;
                 // Update text input
                 const textInput = document.getElementById(id + '-text');
                 if (textInput) textInput.value = this.value;
             } else {
-                map.setPaintProperty('fs-sellable-stroke', 'line-width', parseFloat(this.value));
+                map.setPaintProperty('fs-sellable-fill', 'fill-opacity', parseFloat(this.value));
             }
         }
     });
@@ -641,10 +659,10 @@ document.getElementById('blm-sellable-color-text').addEventListener('input', fun
 document.getElementById('fs-sellable-color-text').addEventListener('input', function() {
     if (/^#[0-9A-F]{6}$/i.test(this.value)) {
         document.getElementById('fs-sellable-color').value = this.value;
-        if (map.getLayer('fs-sellable-stroke')) {
-            map.setPaintProperty('fs-sellable-stroke', 'line-color', this.value);
+        if (map.getLayer('fs-sellable-fill')) {
+            map.setPaintProperty('fs-sellable-fill', 'fill-color', this.value);
             const pip = document.querySelector('#toggle-fs-sellable + label .color-pip');
-            if (pip) pip.style.borderColor = this.value;
+            if (pip) pip.style.backgroundColor = this.value;
         }
     }
 });
