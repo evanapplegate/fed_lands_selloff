@@ -165,6 +165,15 @@
             border: 1px solid #ddd;
             border-radius: 3px;
         }
+        .control-item select {
+            flex: 1;
+            padding: 4px 6px;
+            font-size: 10px;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+            background: white;
+            margin-left: 8px;
+        }
         .control-item input[type="checkbox"] {
             margin-right: 8px;
         }
@@ -298,6 +307,85 @@
                 <label>Distance</label>
                 <input type="range" id="fog-distance" min="1" max="100" step="1" value="50">
                 <span class="range-value" id="fog-distance-value">50</span>
+            </div>
+        </div>
+
+        <!-- Map Style Settings -->
+        <div class="control-group">
+            <h4>Map Style</h4>
+            <div class="control-item">
+                <label>Base Style</label>
+                <select id="map-style-select">
+                    <option value="mapbox://styles/mapbox/outdoors-v12" selected>Outdoors</option>
+                    <option value="mapbox://styles/mapbox/satellite-v9">Satellite</option>
+                    <option value="mapbox://styles/mapbox/satellite-streets-v12">Satellite Streets</option>
+                    <option value="mapbox://styles/mapbox/light-v11">Light</option>
+                    <option value="mapbox://styles/mapbox/dark-v11">Dark</option>
+                    <option value="mapbox://styles/mapbox/streets-v12">Streets</option>
+                    <option value="mapbox://styles/mapbox/navigation-day-v1">Navigation Day</option>
+                    <option value="mapbox://styles/mapbox/navigation-night-v1">Navigation Night</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Layer Styling -->
+        <div class="control-group">
+            <h4>Layer Styling</h4>
+            
+            <!-- BLM All Styling -->
+            <div class="control-item">
+                <label>BLM All Color</label>
+                <div class="color-group">
+                    <input type="color" id="blm-all-color" value="#FFD700">
+                    <input type="text" id="blm-all-color-text" value="#FFD700">
+                </div>
+            </div>
+            <div class="control-item">
+                <label>BLM All Opacity</label>
+                <input type="range" id="blm-all-opacity" min="0" max="1" step="0.1" value="0.6">
+                <span class="range-value" id="blm-all-opacity-value">0.6</span>
+            </div>
+
+            <!-- FS All Styling -->
+            <div class="control-item">
+                <label>FS All Color</label>
+                <div class="color-group">
+                    <input type="color" id="fs-all-color" value="#228B22">
+                    <input type="text" id="fs-all-color-text" value="#228B22">
+                </div>
+            </div>
+            <div class="control-item">
+                <label>FS All Opacity</label>
+                <input type="range" id="fs-all-opacity" min="0" max="1" step="0.1" value="0.6">
+                <span class="range-value" id="fs-all-opacity-value">0.6</span>
+            </div>
+
+            <!-- BLM Sellable Styling -->
+            <div class="control-item">
+                <label>BLM Sellable Color</label>
+                <div class="color-group">
+                    <input type="color" id="blm-sellable-color" value="#B8860B">
+                    <input type="text" id="blm-sellable-color-text" value="#B8860B">
+                </div>
+            </div>
+            <div class="control-item">
+                <label>BLM Sellable Width</label>
+                <input type="range" id="blm-sellable-width" min="0.5" max="5" step="0.5" value="1">
+                <span class="range-value" id="blm-sellable-width-value">1</span>
+            </div>
+
+            <!-- FS Sellable Styling -->
+            <div class="control-item">
+                <label>FS Sellable Color</label>
+                <div class="color-group">
+                    <input type="color" id="fs-sellable-color" value="#006400">
+                    <input type="text" id="fs-sellable-color-text" value="#006400">
+                </div>
+            </div>
+            <div class="control-item">
+                <label>FS Sellable Width</label>
+                <input type="range" id="fs-sellable-width" min="0.5" max="5" step="0.5" value="1">
+                <span class="range-value" id="fs-sellable-width-value">1</span>
             </div>
         </div>
     </div>
@@ -762,6 +850,298 @@ function removeLayerIfExists(layerId) {
         map.removeLayer(layerId);
     }
 }
+
+// Map Style Controls
+document.getElementById('map-style-select').addEventListener('change', function(e) {
+    const newStyle = e.target.value;
+    const currentLayers = getCurrentLayerStates();
+    
+    map.setStyle(newStyle);
+    
+    // Re-add layers after style loads
+    map.once('styledata', function() {
+        // Re-add DEM source
+        if (!map.getSource('mapbox-dem')) {
+            map.addSource('mapbox-dem', {
+                type: 'raster-dem',
+                url: 'mapbox://mapbox.mapbox-terrain-dem-v1',
+                tileSize: 512,
+                maxzoom: 14
+            });
+        }
+        
+        // Re-apply terrain if enabled
+        if (document.getElementById('terrain-toggle').checked) {
+            const exaggeration = parseFloat(document.getElementById('terrain-exaggeration').value);
+            map.setTerrain({ source: 'mapbox-dem', exaggeration: exaggeration });
+        }
+        
+        // Re-add vector sources and layers
+        addVectorLayers();
+        
+        // Restore layer states
+        restoreLayerStates(currentLayers);
+        
+        // Re-apply custom effects
+        if (document.getElementById('hillshade-toggle').checked) {
+            applyHillshadeSettings();
+        }
+        if (document.getElementById('sky-toggle').checked) {
+            applySkySettings();
+        }
+        if (document.getElementById('fog-toggle').checked) {
+            applyFogSettings();
+        }
+    });
+});
+
+function getCurrentLayerStates() {
+    return {
+        blmAll: document.getElementById('toggle-blm-all').checked,
+        fsAll: document.getElementById('toggle-fs-all').checked,
+        blmSellable: document.getElementById('toggle-blm-sellable').checked,
+        fsSellable: document.getElementById('toggle-fs-sellable').checked
+    };
+}
+
+function restoreLayerStates(states) {
+    if (map.getLayer('blm-all-fill')) {
+        map.setLayoutProperty('blm-all-fill', 'visibility', states.blmAll ? 'visible' : 'none');
+    }
+    if (map.getLayer('fs-all-fill')) {
+        map.setLayoutProperty('fs-all-fill', 'visibility', states.fsAll ? 'visible' : 'none');
+    }
+    if (map.getLayer('blm-sellable-stroke')) {
+        map.setLayoutProperty('blm-sellable-stroke', 'visibility', states.blmSellable ? 'visible' : 'none');
+    }
+    if (map.getLayer('fs-sellable-stroke')) {
+        map.setLayoutProperty('fs-sellable-stroke', 'visibility', states.fsSellable ? 'visible' : 'none');
+    }
+}
+
+function addVectorLayers() {
+    // Add vector tile sources
+    if (!map.getSource('blm-all')) {
+        map.addSource('blm-all', {
+            type: 'vector',
+            tiles: ['http://localhost:8080/data/blm_all_hires/{z}/{x}/{y}.pbf'],
+            minzoom: 0,
+            maxzoom: 14
+        });
+    }
+    
+    if (!map.getSource('fs-all')) {
+        map.addSource('fs-all', {
+            type: 'vector',
+            tiles: ['http://localhost:8080/data/fs_all_hires/{z}/{x}/{y}.pbf'],
+            minzoom: 0,
+            maxzoom: 14
+        });
+    }
+    
+    if (!map.getSource('blm-sellable')) {
+        map.addSource('blm-sellable', {
+            type: 'vector',
+            tiles: ['http://localhost:8080/data/blm_sellable_hires/{z}/{x}/{y}.pbf'],
+            minzoom: 0,
+            maxzoom: 14
+        });
+    }
+    
+    if (!map.getSource('fs-sellable')) {
+        map.addSource('fs-sellable', {
+            type: 'vector',
+            tiles: ['http://localhost:8080/data/fs_sellable_hires/{z}/{x}/{y}.pbf'],
+            minzoom: 0,
+            maxzoom: 14
+        });
+    }
+
+    // Add layers with current styling
+    if (!map.getLayer('blm-all-fill')) {
+        map.addLayer({
+            id: 'blm-all-fill',
+            type: 'fill',
+            source: 'blm-all',
+            'source-layer': 'blm_all',
+            paint: {
+                'fill-color': document.getElementById('blm-all-color').value,
+                'fill-opacity': parseFloat(document.getElementById('blm-all-opacity').value)
+            },
+            layout: {
+                'visibility': 'visible'
+            }
+        });
+    }
+    
+    if (!map.getLayer('fs-all-fill')) {
+        map.addLayer({
+            id: 'fs-all-fill',
+            type: 'fill',
+            source: 'fs-all',
+            'source-layer': 'fs_all',
+            paint: {
+                'fill-color': document.getElementById('fs-all-color').value,
+                'fill-opacity': parseFloat(document.getElementById('fs-all-opacity').value)
+            },
+            layout: {
+                'visibility': 'visible'
+            }
+        });
+    }
+    
+    if (!map.getLayer('blm-sellable-stroke')) {
+        map.addLayer({
+            id: 'blm-sellable-stroke',
+            type: 'line',
+            source: 'blm-sellable',
+            'source-layer': 'blm_sellable',
+            paint: {
+                'line-color': document.getElementById('blm-sellable-color').value,
+                'line-width': parseFloat(document.getElementById('blm-sellable-width').value),
+                'line-opacity': 0.8
+            },
+            layout: {
+                'visibility': 'visible'
+            }
+        });
+    }
+    
+    if (!map.getLayer('fs-sellable-stroke')) {
+        map.addLayer({
+            id: 'fs-sellable-stroke',
+            type: 'line',
+            source: 'fs-sellable',
+            'source-layer': 'fs_sellable',
+            paint: {
+                'line-color': document.getElementById('fs-sellable-color').value,
+                'line-width': parseFloat(document.getElementById('fs-sellable-width').value),
+                'line-opacity': 0.8
+            },
+            layout: {
+                'visibility': 'visible'
+            }
+        });
+    }
+}
+
+// Layer Styling Controls
+['blm-all-color', 'blm-all-opacity'].forEach(id => {
+    document.getElementById(id).addEventListener('input', function() {
+        if (map.getLayer('blm-all-fill')) {
+            if (id.includes('color')) {
+                map.setPaintProperty('blm-all-fill', 'fill-color', this.value);
+                // Update color pip in layer controls
+                const pip = document.querySelector('#toggle-blm-all + label .color-pip');
+                if (pip) pip.style.backgroundColor = this.value;
+                // Update text input
+                const textInput = document.getElementById(id + '-text');
+                if (textInput) textInput.value = this.value;
+            } else {
+                map.setPaintProperty('blm-all-fill', 'fill-opacity', parseFloat(this.value));
+            }
+        }
+    });
+});
+
+// Add text input listeners for colors
+document.getElementById('blm-all-color-text').addEventListener('input', function() {
+    if (/^#[0-9A-F]{6}$/i.test(this.value)) {
+        document.getElementById('blm-all-color').value = this.value;
+        if (map.getLayer('blm-all-fill')) {
+            map.setPaintProperty('blm-all-fill', 'fill-color', this.value);
+            const pip = document.querySelector('#toggle-blm-all + label .color-pip');
+            if (pip) pip.style.backgroundColor = this.value;
+        }
+    }
+});
+
+['fs-all-color', 'fs-all-opacity'].forEach(id => {
+    document.getElementById(id).addEventListener('input', function() {
+        if (map.getLayer('fs-all-fill')) {
+            if (id.includes('color')) {
+                map.setPaintProperty('fs-all-fill', 'fill-color', this.value);
+                // Update color pip in layer controls
+                const pip = document.querySelector('#toggle-fs-all + label .color-pip');
+                if (pip) pip.style.backgroundColor = this.value;
+                // Update text input
+                const textInput = document.getElementById(id + '-text');
+                if (textInput) textInput.value = this.value;
+            } else {
+                map.setPaintProperty('fs-all-fill', 'fill-opacity', parseFloat(this.value));
+            }
+        }
+    });
+});
+
+document.getElementById('fs-all-color-text').addEventListener('input', function() {
+    if (/^#[0-9A-F]{6}$/i.test(this.value)) {
+        document.getElementById('fs-all-color').value = this.value;
+        if (map.getLayer('fs-all-fill')) {
+            map.setPaintProperty('fs-all-fill', 'fill-color', this.value);
+            const pip = document.querySelector('#toggle-fs-all + label .color-pip');
+            if (pip) pip.style.backgroundColor = this.value;
+        }
+    }
+});
+
+['blm-sellable-color', 'blm-sellable-width'].forEach(id => {
+    document.getElementById(id).addEventListener('input', function() {
+        if (map.getLayer('blm-sellable-stroke')) {
+            if (id.includes('color')) {
+                map.setPaintProperty('blm-sellable-stroke', 'line-color', this.value);
+                // Update color pip in layer controls
+                const pip = document.querySelector('#toggle-blm-sellable + label .color-pip');
+                if (pip) pip.style.borderColor = this.value;
+                // Update text input
+                const textInput = document.getElementById(id + '-text');
+                if (textInput) textInput.value = this.value;
+            } else {
+                map.setPaintProperty('blm-sellable-stroke', 'line-width', parseFloat(this.value));
+            }
+        }
+    });
+});
+
+document.getElementById('blm-sellable-color-text').addEventListener('input', function() {
+    if (/^#[0-9A-F]{6}$/i.test(this.value)) {
+        document.getElementById('blm-sellable-color').value = this.value;
+        if (map.getLayer('blm-sellable-stroke')) {
+            map.setPaintProperty('blm-sellable-stroke', 'line-color', this.value);
+            const pip = document.querySelector('#toggle-blm-sellable + label .color-pip');
+            if (pip) pip.style.borderColor = this.value;
+        }
+    }
+});
+
+['fs-sellable-color', 'fs-sellable-width'].forEach(id => {
+    document.getElementById(id).addEventListener('input', function() {
+        if (map.getLayer('fs-sellable-stroke')) {
+            if (id.includes('color')) {
+                map.setPaintProperty('fs-sellable-stroke', 'line-color', this.value);
+                // Update color pip in layer controls
+                const pip = document.querySelector('#toggle-fs-sellable + label .color-pip');
+                if (pip) pip.style.borderColor = this.value;
+                // Update text input
+                const textInput = document.getElementById(id + '-text');
+                if (textInput) textInput.value = this.value;
+            } else {
+                map.setPaintProperty('fs-sellable-stroke', 'line-width', parseFloat(this.value));
+            }
+        }
+    });
+});
+
+document.getElementById('fs-sellable-color-text').addEventListener('input', function() {
+    if (/^#[0-9A-F]{6}$/i.test(this.value)) {
+        document.getElementById('fs-sellable-color').value = this.value;
+        if (map.getLayer('fs-sellable-stroke')) {
+            map.setPaintProperty('fs-sellable-stroke', 'line-color', this.value);
+            const pip = document.querySelector('#toggle-fs-sellable + label .color-pip');
+            if (pip) pip.style.borderColor = this.value;
+        }
+    }
+});
 </script>
 
 </body>
