@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='utf-8' />
+    <title>Land Selloff Map</title>
+    <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+    <script src='https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js'></script>
+    <link href='https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css' rel='stylesheet' />
+    <link href='styles.css' rel='stylesheet' />
+</head>
+<body>
+
+<div id='map'></div>
+
+<!-- Terrain Editor Controls -->
+<div class="terrain-controls" id="terrain-controls">
+    <div class="control-header" onclick="toggleTerrainControls()">
+        <span>Terrain Controls</span>
+        <span id="collapse-icon">−</span>
+    </div>
+    <div class="control-content">
+        <!-- Terrain Settings -->
+        <div class="control-group">
+            <h4>Terrain</h4>
+            <div class="control-item">
+                <input type="checkbox" id="terrain-toggle" checked>
+                <label for="terrain-toggle">Enable 3D Terrain</label>
+            </div>
+            <div class="control-item">
+                <label>Exaggeration</label>
+                <input type="range" id="terrain-exaggeration" min="0.1" max="5" step="0.1" value="3">
+                <span class="range-value" id="terrain-exaggeration-value">3</span>
+            </div>
+        </div>
+
+        <!-- Hillshade Settings -->
+        <div class="control-group">
+            <h4>Hillshade</h4>
+            <div class="control-item">
+                <input type="checkbox" id="hillshade-toggle">
+                <label for="hillshade-toggle">Enable Hillshade</label>
+            </div>
+            <div class="control-item">
+                <label>Shadow</label>
+                <div class="color-group">
+                    <input type="color" id="hillshade-shadow-color" value="#5a3f2b">
+                    <input type="text" id="hillshade-shadow-color-text" value="#5a3f2b">
+                </div>
+            </div>
+            <div class="control-item">
+                <label>Highlight</label>
+                <div class="color-group">
+                    <input type="color" id="hillshade-highlight-color" value="#f9e29c">
+                    <input type="text" id="hillshade-highlight-color-text" value="#f9e29c">
+                </div>
+            </div>
+            <div class="control-item">
+                <label>Illumination</label>
+                <input type="range" id="hillshade-illumination" min="0" max="360" step="1" value="240">
+                <span class="range-value" id="hillshade-illumination-value">240</span>
+            </div>
+            <div class="control-item">
+                <label>Exaggeration</label>
+                <input type="range" id="hillshade-exaggeration" min="0" max="2" step="0.1" value="0.8">
+                <span class="range-value" id="hillshade-exaggeration-value">0.8</span>
+            </div>
+        </div>
+
+        <!-- Sky Settings -->
+        <div class="control-group">
+            <h4>Sky & Atmosphere</h4>
+            <div class="control-item">
+                <input type="checkbox" id="sky-toggle" checked>
+                <label for="sky-toggle">Enable Sky</label>
+            </div>
+            <div class="control-item">
+                <label>Sun Intensity</label>
+                <input type="range" id="sky-sun-intensity" min="1" max="50" step="1" value="15">
+                <span class="range-value" id="sky-sun-intensity-value">15</span>
+            </div>
+            <div class="control-item">
+                <label>Sun Position X</label>
+                <input type="range" id="sky-sun-x" min="-1" max="1" step="0.1" value="0">
+                <span class="range-value" id="sky-sun-x-value">0</span>
+            </div>
+            <div class="control-item">
+                <label>Sun Position Y</label>
+                <input type="range" id="sky-sun-y" min="-1" max="1" step="0.1" value="0">
+                <span class="range-value" id="sky-sun-y-value">0</span>
+            </div>
+        </div>
+
+        <!-- Fog Settings -->
+        <div class="control-group">
+            <h4>Fog</h4>
+            <div class="control-item">
+                <input type="checkbox" id="fog-toggle">
+                <label for="fog-toggle">Enable Fog</label>
+            </div>
+            <div class="control-item">
+                <label>Color</label>
+                <div class="color-group">
+                    <input type="color" id="fog-color" value="#ffffff">
+                    <input type="text" id="fog-color-text" value="#ffffff">
+                </div>
+            </div>
+            <div class="control-item">
+                <label>Horizon Blend</label>
+                <input type="range" id="fog-horizon-blend" min="0" max="1" step="0.1" value="0.5">
+                <span class="range-value" id="fog-horizon-blend-value">0.5</span>
+            </div>
+            <div class="control-item">
+                <label>Distance</label>
+                <input type="range" id="fog-distance" min="1" max="100" step="1" value="50">
+                <span class="range-value" id="fog-distance-value">50</span>
+            </div>
+        </div>
+
+        <!-- Map Style Settings -->
+        <div class="control-group">
+            <h4>Map Style</h4>
+            <div class="control-item">
+                <label>Base Style</label>
+                <select id="map-style-select">
+                    <option value="mapbox://styles/mapbox/outdoors-v12" selected>Outdoors</option>
+                    <option value="mapbox://styles/mapbox/satellite-v9">Satellite</option>
+                    <option value="mapbox://styles/mapbox/satellite-streets-v12">Satellite Streets</option>
+                    <option value="mapbox://styles/mapbox/light-v11">Light</option>
+                    <option value="mapbox://styles/mapbox/dark-v11">Dark</option>
+                    <option value="mapbox://styles/mapbox/streets-v12">Streets</option>
+                    <option value="mapbox://styles/mapbox/navigation-day-v1">Navigation Day</option>
+                    <option value="mapbox://styles/mapbox/navigation-night-v1">Navigation Night</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Layer Styling -->
+        <div class="control-group">
+            <h4>Layer Styling</h4>
+            
+            <!-- BLM All Styling -->
+            <div class="control-item">
+                <label>BLM All Color</label>
+                <div class="color-group">
+                    <input type="color" id="blm-all-color" value="#FFD700">
+                    <input type="text" id="blm-all-color-text" value="#FFD700">
+                </div>
+            </div>
+            <div class="control-item">
+                <label>BLM All Opacity</label>
+                <input type="range" id="blm-all-opacity" min="0" max="1" step="0.1" value="0.6">
+                <span class="range-value" id="blm-all-opacity-value">0.6</span>
+            </div>
+
+            <!-- FS All Styling -->
+            <div class="control-item">
+                <label>FS All Color</label>
+                <div class="color-group">
+                    <input type="color" id="fs-all-color" value="#228B22">
+                    <input type="text" id="fs-all-color-text" value="#228B22">
+                </div>
+            </div>
+            <div class="control-item">
+                <label>FS All Opacity</label>
+                <input type="range" id="fs-all-opacity" min="0" max="1" step="0.1" value="0.6">
+                <span class="range-value" id="fs-all-opacity-value">0.6</span>
+            </div>
+
+            <!-- BLM Sellable Styling -->
+            <div class="control-item">
+                <label>BLM Sellable Color</label>
+                <div class="color-group">
+                    <input type="color" id="blm-sellable-color" value="#B8860B">
+                    <input type="text" id="blm-sellable-color-text" value="#B8860B">
+                </div>
+            </div>
+            <div class="control-item">
+                <label>BLM Sellable Width</label>
+                <input type="range" id="blm-sellable-width" min="0.5" max="5" step="0.5" value="1">
+                <span class="range-value" id="blm-sellable-width-value">1</span>
+            </div>
+
+            <!-- FS Sellable Styling -->
+            <div class="control-item">
+                <label>FS Sellable Color</label>
+                <div class="color-group">
+                    <input type="color" id="fs-sellable-color" value="#006400">
+                    <input type="text" id="fs-sellable-color-text" value="#006400">
+                </div>
+            </div>
+            <div class="control-item">
+                <label>FS Sellable Width</label>
+                <input type="range" id="fs-sellable-width" min="0.5" max="5" step="0.5" value="1">
+                <span class="range-value" id="fs-sellable-width-value">1</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class='controls'>
+    <button class='control-button active' onclick='toggleTerrain()' id='terrain-btn'>3D Terrain</button>
+</div>
+
+<div class="layer-controls">
+    <div class="layer-toggle">
+        <input type="checkbox" id="toggle-blm-sellable" checked>
+        <label for="toggle-blm-sellable">
+            <span class="color-pip stroke" style="border-color: #B8860B;"></span>
+            BLM Sellable
+        </label>
+    </div>
+    <div class="layer-toggle">
+        <input type="checkbox" id="toggle-blm-all" checked>
+        <label for="toggle-blm-all">
+            <span class="color-pip fill" style="background-color: #FFD700;"></span>
+            BLM All
+        </label>
+    </div>
+    <div class="layer-toggle">
+        <input type="checkbox" id="toggle-fs-sellable" checked>
+        <label for="toggle-fs-sellable">
+            <span class="color-pip stroke" style="border-color: #006400;"></span>
+            FS Sellable
+        </label>
+    </div>
+    <div class="layer-toggle">
+        <input type="checkbox" id="toggle-fs-all" checked>
+        <label for="toggle-fs-all">
+            <span class="color-pip fill" style="background-color: #228B22;"></span>
+            FS All
+        </label>
+    </div>
+</div>
+
+<script src="script.js"></script>
+
+</body>
+</html> 

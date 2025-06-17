@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='utf-8' />
+    <title>Selloff Data</title>
+    <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+    <script src='https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js'></script>
+    <link href='https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css' rel='stylesheet' />
+    <style>
+        body { margin: 0; padding: 0; }
+        #map { position: absolute; top: 0; bottom: 0; width: 100%; }
+        .legend {
+            background-color: #fff;
+            border-radius: 3px;
+            bottom: 30px;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+            font: 12px/20px 'Helvetica Neue', Arial, Helvetica, sans-serif;
+            padding: 10px;
+            position: absolute;
+            right: 10px;
+            z-index: 1;
+        }
+        .legend h4 { margin: 0 0 10px; }
+        .legend div span { border-radius: 50%; display: inline-block; height: 10px; margin-right: 5px; width: 10px; }
+    </style>
+</head>
+<body>
+
+<div id='map'></div>
+<div class='legend'>
+    <h4>Land Data</h4>
+    <div><span style='background-color: #ff6b6b'></span>Tong Selloff</div>
+    <div><span style='background-color: #4ecdc4'></span>USFS</div>
+    <div><span style='background-color: #45b7d1'></span>BLM</div>
+</div>
+
+<script>
+// Replace 'YOUR_MAPBOX_TOKEN' with your actual token
+mapboxgl.accessToken = 'YOUR_MAPBOX_TOKEN';
+
+const map = new mapboxgl.Map({
+    container: 'map',
+    style: 'mapbox://styles/mapbox/satellite-streets-v12',
+    center: [-135.8, 57.0], // Centered on Alaska based on tong data
+    zoom: 8
+});
+
+map.on('load', () => {
+    // Add vector tile sources
+    // Note: For local .mbtiles files, you'll need to serve them via a tile server
+    // like tileserver-gl or upload to Mapbox Studio
+    
+    // Example for if you upload to Mapbox Studio:
+    /*
+    map.addSource('tong-selloff', {
+        type: 'vector',
+        url: 'mapbox://your-username.your-tileset-id'
+    });
+    */
+    
+    // For local development, serve your .mbtiles files:
+    // 1. Install tileserver-gl: npm install -g tileserver-gl
+    // 2. Run: tileserver-gl vector-tiles/
+    // 3. Use URLs like http://localhost:8080/data/tong_selloff/{z}/{x}/{y}.pbf
+    
+    map.addSource('tong-selloff', {
+        type: 'vector',
+        tiles: ['http://localhost:8080/data/tong_selloff/{z}/{x}/{y}.pbf'],
+        minzoom: 0,
+        maxzoom: 14
+    });
+    
+    map.addSource('usfs', {
+        type: 'vector',
+        tiles: ['http://localhost:8080/data/usfs/{z}/{x}/{y}.pbf'],
+        minzoom: 0,
+        maxzoom: 10
+    });
+    
+    map.addSource('blm', {
+        type: 'vector',
+        tiles: ['http://localhost:8080/data/blm/{z}/{x}/{y}.pbf'],
+        minzoom: 0,
+        maxzoom: 10
+    });
+    
+    // Add layers
+    map.addLayer({
+        id: 'tong-selloff-fill',
+        type: 'fill',
+        source: 'tong-selloff',
+        'source-layer': 'selloff',
+        paint: {
+            'fill-color': '#ff6b6b',
+            'fill-opacity': 0.6,
+            'fill-outline-color': '#d63031'
+        }
+    });
+    
+    map.addLayer({
+        id: 'usfs-fill',
+        type: 'fill',
+        source: 'usfs',
+        'source-layer': 'usfs',
+        paint: {
+            'fill-color': '#4ecdc4',
+            'fill-opacity': 0.4,
+            'fill-outline-color': '#00b894'
+        }
+    });
+    
+    map.addLayer({
+        id: 'blm-fill',
+        type: 'fill',
+        source: 'blm',
+        'source-layer': 'blm',
+        paint: {
+            'fill-color': '#45b7d1',
+            'fill-opacity': 0.4,
+            'fill-outline-color': '#0984e3'
+        }
+    });
+    
+    // Add click events for popups
+    map.on('click', 'tong-selloff-fill', (e) => {
+        new mapboxgl.Popup()
+            .setLngLat(e.lngLat)
+            .setHTML(`<h3>Tong Selloff</h3><p>Area: ${e.features[0].properties.area} sq units</p>`)
+            .addTo(map);
+    });
+    
+    map.on('click', 'usfs-fill', (e) => {
+        new mapboxgl.Popup()
+            .setLngLat(e.lngLat)
+            .setHTML(`<h3>USFS Land</h3><p>${JSON.stringify(e.features[0].properties, null, 2)}</p>`)
+            .addTo(map);
+    });
+    
+    map.on('click', 'blm-fill', (e) => {
+        new mapboxgl.Popup()
+            .setLngLat(e.lngLat)
+            .setHTML(`<h3>BLM Land</h3><p>State: ${e.features[0].properties.NAME}</p><p>Acres: ${e.features[0].properties.Acres}</p>`)
+            .addTo(map);
+    });
+    
+    // Change cursor on hover
+    map.on('mouseenter', 'tong-selloff-fill', () => { map.getCanvas().style.cursor = 'pointer'; });
+    map.on('mouseleave', 'tong-selloff-fill', () => { map.getCanvas().style.cursor = ''; });
+    map.on('mouseenter', 'usfs-fill', () => { map.getCanvas().style.cursor = 'pointer'; });
+    map.on('mouseleave', 'usfs-fill', () => { map.getCanvas().style.cursor = ''; });
+    map.on('mouseenter', 'blm-fill', () => { map.getCanvas().style.cursor = 'pointer'; });
+    map.on('mouseleave', 'blm-fill', () => { map.getCanvas().style.cursor = ''; });
+});
+</script>
+
+</body>
+</html> 
