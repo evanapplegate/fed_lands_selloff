@@ -204,6 +204,28 @@ map.on('load', () => {
             `)
             .addTo(map);
     });
+
+    // Add forest name labels layer
+    map.addLayer({
+        id: 'fs-labels',
+        type: 'symbol',
+        source: 'fs-all',
+        'source-layer': 'fs_all',
+        layout: {
+            'text-field': ['get', 'FORESTNAME'],
+            'text-font': ['Open Sans Bold', 'Arial Unicode MS Bold'],
+            'text-size': 12,
+            'text-offset': [0, 0],
+            'text-anchor': 'center',
+            'visibility': 'none'
+        },
+        paint: {
+            'text-color': '#ffffff',
+            'text-halo-color': '#000000',
+            'text-halo-width': 1
+        },
+        minzoom: 8
+    });
     
     // Change cursor on hover
     ['blm-all-fill', 'fs-all-fill', 'blm-sellable-stroke', 'fs-sellable-stroke'].forEach(layer => {
@@ -594,6 +616,30 @@ function addVectorLayers() {
             }
         });
     }
+
+    // Add forest labels layer
+    if (!map.getLayer('fs-labels')) {
+        map.addLayer({
+            id: 'fs-labels',
+            type: 'symbol',
+            source: 'fs-all',
+            'source-layer': 'fs_all',
+            layout: {
+                'text-field': ['get', 'FORESTNAME'],
+                'text-font': ['Open Sans Bold', 'Arial Unicode MS Bold'],
+                'text-size': parseInt(document.getElementById('fs-label-size').value),
+                'text-offset': [0, 0],
+                'text-anchor': 'center',
+                'visibility': document.getElementById('fs-labels-toggle').checked ? 'visible' : 'none'
+            },
+            paint: {
+                'text-color': document.getElementById('fs-label-color').value,
+                'text-halo-color': '#000000',
+                'text-halo-width': 1
+            },
+            minzoom: parseInt(document.getElementById('fs-label-min-zoom').value)
+        });
+    }
 }
 
 // Layer Styling Controls
@@ -712,4 +758,41 @@ document.getElementById('fs-sellable-color-text').addEventListener('input', func
             if (pip) pip.style.borderColor = this.value;
         }
     }
+});
+
+// Label Controls
+document.getElementById('fs-labels-toggle').addEventListener('change', function() {
+    if (map.getLayer('fs-labels')) {
+        map.setLayoutProperty('fs-labels', 'visibility', this.checked ? 'visible' : 'none');
+    }
+});
+
+document.getElementById('fs-label-size').addEventListener('input', function() {
+    if (map.getLayer('fs-labels')) {
+        map.setLayoutProperty('fs-labels', 'text-size', parseInt(this.value));
+    }
+    document.getElementById('fs-label-size-value').textContent = this.value;
+});
+
+document.getElementById('fs-label-color').addEventListener('input', function() {
+    if (map.getLayer('fs-labels')) {
+        map.setPaintProperty('fs-labels', 'text-color', this.value);
+    }
+    document.getElementById('fs-label-color-text').value = this.value;
+});
+
+document.getElementById('fs-label-color-text').addEventListener('input', function() {
+    if (/^#[0-9A-F]{6}$/i.test(this.value)) {
+        document.getElementById('fs-label-color').value = this.value;
+        if (map.getLayer('fs-labels')) {
+            map.setPaintProperty('fs-labels', 'text-color', this.value);
+        }
+    }
+});
+
+document.getElementById('fs-label-min-zoom').addEventListener('input', function() {
+    if (map.getLayer('fs-labels')) {
+        map.setMinZoom('fs-labels', parseInt(this.value));
+    }
+    document.getElementById('fs-label-min-zoom-value').textContent = this.value;
 }); 
