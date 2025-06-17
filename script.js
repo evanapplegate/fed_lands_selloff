@@ -154,56 +154,7 @@ map.on('load', () => {
         }
     });
     
-    // Add click events for popups
-    map.on('click', 'blm-all-fill', (e) => {
-        const props = e.features[0].properties;
-        new mapboxgl.Popup()
-            .setLngLat(e.lngLat)
-            .setHTML(`
-                <h3>BLM Land</h3>
-                <p><strong>Name:</strong> ${props.NAME || 'N/A'}</p>
-                <p><strong>Acres:</strong> ${props.Acres ? Number(props.Acres).toLocaleString() : 'N/A'}</p>
-            `)
-            .addTo(map);
-    });
-    
-    map.on('click', 'fs-all-fill', (e) => {
-        const props = e.features[0].properties;
-        new mapboxgl.Popup()
-            .setLngLat(e.lngLat)
-            .setHTML(`
-                <h3>Forest Service Land</h3>
-                <p><strong>Name:</strong> ${props.NAME || props.FORESTNAME || 'N/A'}</p>
-                <p><strong>Acres:</strong> ${props.Acres ? Number(props.Acres).toLocaleString() : 'N/A'}</p>
-            `)
-            .addTo(map);
-    });
-    
-    map.on('click', 'blm-sellable-stroke', (e) => {
-        const props = e.features[0].properties;
-        new mapboxgl.Popup()
-            .setLngLat(e.lngLat)
-            .setHTML(`
-                <h3>BLM Sellable Land</h3>
-                <p><strong>Name:</strong> ${props.NAME || 'N/A'}</p>
-                <p><strong>Acres:</strong> ${props.Acres ? Number(props.Acres).toLocaleString() : 'N/A'}</p>
-                <p style="color: #B8860B;"><strong>Available for Sale</strong></p>
-            `)
-            .addTo(map);
-    });
-    
-    map.on('click', 'fs-sellable-stroke', (e) => {
-        const props = e.features[0].properties;
-        new mapboxgl.Popup()
-            .setLngLat(e.lngLat)
-            .setHTML(`
-                <h3>Forest Service Sellable Land</h3>
-                <p><strong>Name:</strong> ${props.NAME || props.FORESTNAME || 'N/A'}</p>
-                <p><strong>Acres:</strong> ${props.Acres ? Number(props.Acres).toLocaleString() : 'N/A'}</p>
-                <p style="color: #006400;"><strong>Available for Sale</strong></p>
-            `)
-            .addTo(map);
-    });
+        // Click popups disabled per user request
 
     // Add forest name labels layer
     map.addLayer({
@@ -256,6 +207,11 @@ map.on('load', () => {
     document.getElementById('toggle-fs-sellable').addEventListener('change', function(e) {
         const visibility = e.target.checked ? 'visible' : 'none';
         map.setLayoutProperty('fs-sellable-stroke', 'visibility', visibility);
+    });
+    
+    document.getElementById('toggle-fs-labels').addEventListener('change', function(e) {
+        const visibility = e.target.checked ? 'visible' : 'none';
+        map.setLayoutProperty('fs-labels', 'visibility', visibility);
     });
 });
 
