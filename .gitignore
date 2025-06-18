@@ -13,4 +13,4 @@ __pycache__/
 Thumbs.db
 
 # Logs
-*.log 
+*.log protomaps/data/*.pmtiles
