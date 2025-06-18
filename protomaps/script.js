@@ -2,7 +2,8 @@
 let protocol = new pmtiles.Protocol();
 maplibregl.addProtocol("pmtiles", protocol.tile);
 
-// No Mapbox protocol - using simple style first
+// UPDATE THIS WITH YOUR PAID MAPBOX TOKEN
+const MAPBOX_ACCESS_TOKEN = 'pk.eyJ1IjoiZXZhbmRhcHBsZWdhdGUiLCJhIjoiY2tmbzA1cWM1MWozeTM4cXV4eHUwMzFhdiJ9.Z5f9p8jJD_N1MQwycF2NEw'; // REPLACE WITH YOUR TOKEN
 
 const map = new maplibregl.Map({
     container: 'map',
@@ -28,9 +29,21 @@ const map = new maplibregl.Map({
     projection: 'globe'
 });
 
+// Terrain functionality  
 map.on('style.load', () => {
-    // Style loaded - terrain will be restored if enabled
+    // Add terrain source - using AWS Terrain tiles (free)
+    if (!map.getSource('aws-terrain')) {
+        map.addSource('aws-terrain', {
+            type: 'raster-dem',
+            tiles: ['https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png'],
+            tileSize: 256,
+            maxzoom: 15,
+            encoding: 'terrarium'
+        });
+    }
 });
+
+// No Mapbox protocol - using simple style first
 
 // Use a variable to track if initial layers are added
 let initialLayersAdded = false;
@@ -158,43 +171,30 @@ document.addEventListener('DOMContentLoaded', function() {
 // Terrain Controls
 document.getElementById('terrain-toggle').addEventListener('change', function(e) {
     if (e.target.checked) {
-        enableTerrain();
+        // Enable terrain
+        try {
+            const exaggeration = parseFloat(document.getElementById('terrain-exaggeration').value) || 1;
+            map.setTerrain({ source: 'aws-terrain', exaggeration: exaggeration });
+        } catch (error) {
+            console.error('Error enabling terrain:', error);
+            e.target.checked = false;
+            alert('Could not enable terrain: ' + error.message);
+        }
     } else {
-        disableTerrain();
+        // Disable terrain
+        map.setTerrain(null);
     }
 });
 
 document.getElementById('terrain-exaggeration').addEventListener('input', function(e) {
     const exaggeration = parseFloat(e.target.value);
-    if (map.getTerrain()) {
-        map.setTerrain({
-            source: 'terrain-source',
-            exaggeration: exaggeration
-        });
+    document.getElementById('terrain-exaggeration-value').textContent = exaggeration;
+    
+    // Update terrain if enabled
+    if (document.getElementById('terrain-toggle').checked && map.getTerrain()) {
+        map.setTerrain({ source: 'aws-terrain', exaggeration: exaggeration });
     }
 });
-
-function enableTerrain() {
-    // Add terrain source if it doesn't exist
-    if (!map.getSource('terrain-source')) {
-        map.addSource('terrain-source', {
-            type: 'raster-dem',
-            url: 'https://demotiles.maplibre.org/terrain-tiles/tiles.json',
-            tileSize: 256
-        });
-    }
-    
-    // Enable terrain
-    const exaggeration = parseFloat(document.getElementById('terrain-exaggeration').value);
-    map.setTerrain({
-        source: 'terrain-source',
-        exaggeration: exaggeration
-    });
-}
-
-function disableTerrain() {
-    map.setTerrain(null);
-}
 
 // Stroke Controls
 document.getElementById('blm-sellable-stroke-toggle').addEventListener('change', function(e) {
@@ -371,7 +371,7 @@ async function loadBasemap(styleUrl, preserveView = true) {
     }
 
     let baseStyle;
-    const accessToken = 'pk.eyJ1Ijoiam9ubml3YWxrZXIiLCJhIjoiY2loeG82cWplMDA4N3cxa3MzZXU2N2JpYSJ9.H6vPKI0UKLv733mSCXh2Lw';
+    const accessToken = MAPBOX_ACCESS_TOKEN;
 
     try {
         if (styleUrl === 'blank') {
@@ -388,7 +388,7 @@ async function loadBasemap(styleUrl, preserveView = true) {
         } else {
             const response = await fetch(styleUrl);
             baseStyle = await response.json();
-            baseStyle = transformStyleUrls(baseStyle, accessToken);
+            baseStyle = transformStyleUrls(baseStyle, MAPBOX_ACCESS_TOKEN);
         }
     } catch (error) {
         console.error("Failed to load or transform style:", error);
@@ -411,11 +411,6 @@ async function loadBasemap(styleUrl, preserveView = true) {
             map.setZoom(viewState.zoom);
             map.setBearing(viewState.bearing);
             map.setPitch(viewState.pitch);
-        }
-
-        // Restore terrain if it was enabled
-        if (document.getElementById('terrain-toggle').checked) {
-            enableTerrain();
         }
 
         if (document.getElementById('blm-sellable-stroke-toggle').checked) addBLMSellableStroke();
