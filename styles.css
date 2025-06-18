@@ -11,41 +11,7 @@ body {
     width: 100%; 
 }
 
-/* Search Bar */
-.search-container {
-    position: absolute;
-    top: 15px;
-    right: 15px;
-    z-index: 1000;
-    display: flex;
-    background: rgba(255, 255, 255, 0.95);
-    border-radius: 4px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-    overflow: hidden;
-    margin-right: 50px; /* Space for zoom controls */
-}
 
-#search-input {
-    border: none;
-    padding: 10px 12px;
-    font-size: 12px;
-    width: 200px;
-    outline: none;
-    background: transparent;
-}
-
-#search-button {
-    border: none;
-    background: #007cbf;
-    color: white;
-    padding: 10px 12px;
-    cursor: pointer;
-    font-size: 12px;
-}
-
-#search-button:hover {
-    background: #0056b3;
-}
 
 /* Hide default Mapbox controls */
 .mapboxgl-ctrl-fullscreen,
@@ -84,6 +50,65 @@ body {
     right: 15px;
     z-index: 1;
     min-width: 180px;
+}
+
+/* About Panel */
+.about-panel {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    position: absolute;
+    right: 15px;
+    bottom: 200px; /* Positioned 20px above layer controls (30px + estimated height + 20px) */
+    z-index: 1000;
+    width: 300px;
+    max-height: 60vh;
+    overflow-y: auto;
+}
+
+.about-panel.collapsed {
+    width: auto;
+}
+
+.about-panel.collapsed .about-content {
+    display: none;
+}
+
+.about-content {
+    padding: 15px;
+}
+
+.about-content p {
+    margin: 0 0 8px 0;
+    font-size: 11px;
+    color: #555;
+    line-height: 1.4;
+}
+
+.about-content p:last-child {
+    margin-bottom: 0;
+}
+
+.about-content ol {
+    margin: 8px 0;
+    padding-left: 16px;
+}
+
+.about-content li {
+    font-size: 11px;
+    color: #555;
+    line-height: 1.4;
+    margin-bottom: 2px;
+}
+
+.about-content a {
+    color: #007cbf;
+    text-decoration: none;
+    word-break: break-all;
+}
+
+.about-content a:hover {
+    text-decoration: underline;
 }
 
 .layer-toggle {
@@ -146,7 +171,7 @@ body {
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
     max-height: 80vh;
     overflow-y: auto;
-    width: 280px;
+    width: 300px;
 }
 
 .terrain-controls.collapsed {

@@ -36,62 +36,11 @@ map.on('style.load', () => {
     });
 });
 
-// Search functionality
-function initializeSearch() {
-    const searchInput = document.getElementById('search-input');
-    const searchButton = document.getElementById('search-button');
-    
-    function performSearch() {
-        const query = searchInput.value.trim();
-        if (!query) return;
-        
-        // Use Mapbox Geocoding API
-        const geocodeUrl = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?access_token=${mapboxgl.accessToken}&country=US&types=place,locality,neighborhood,address`;
-        
-        fetch(geocodeUrl)
-            .then(response => response.json())
-            .then(data => {
-                if (data.features && data.features.length > 0) {
-                    const feature = data.features[0];
-                    const [lng, lat] = feature.center;
-                    
-                    map.flyTo({
-                        center: [lng, lat],
-                        zoom: Math.max(map.getZoom(), 10),
-                        duration: 2000
-                    });
-                    
-                    // Optional: Add a temporary marker
-                    const marker = new mapboxgl.Marker()
-                        .setLngLat([lng, lat])
-                        .addTo(map);
-                    
-                    // Remove marker after 3 seconds
-                    setTimeout(() => marker.remove(), 3000);
-                } else {
-                    alert('Location not found');
-                }
-            })
-            .catch(error => {
-                console.error('Search error:', error);
-                alert('Search failed');
-            });
-    }
-    
-    searchButton.addEventListener('click', performSearch);
-    searchInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
-            performSearch();
-        }
-    });
-}
+
 
 map.on('load', () => {
     // Use the consolidated layer creation function
     addVectorLayers();
-    
-    // Initialize search functionality
-    initializeSearch();
     
     // Change cursor on hover
     ['blm-all-fill', 'fs-all-fill', 'blm-sellable-fill', 'fs-sellable-fill'].forEach(layer => {
@@ -160,6 +109,19 @@ function toggleTerrainControls() {
     }
 }
 
+function toggleAboutPanel() {
+    const panel = document.getElementById('about-panel');
+    const icon = document.getElementById('about-collapse-icon');
+    
+    if (panel.classList.contains('collapsed')) {
+        panel.classList.remove('collapsed');
+        icon.textContent = '−';
+    } else {
+        panel.classList.add('collapsed');
+        icon.textContent = '+';
+    }
+}
+
 // Initialize range input displays
 document.addEventListener('DOMContentLoaded', function() {
     const rangeInputs = document.querySelectorAll('input[type="range"]');
@@ -206,110 +168,119 @@ document.getElementById('terrain-exaggeration').addEventListener('input', functi
     }
 });
 
-// Hillshade Controls
-document.getElementById('hillshade-toggle').addEventListener('change', function(e) {
+// Stroke Controls
+document.getElementById('blm-sellable-stroke-toggle').addEventListener('change', function(e) {
     if (e.target.checked) {
-        applyHillshadeSettings();
+        addBLMSellableStroke();
     } else {
-        removeLayerIfExists('hillshade-layer');
+        removeLayerIfExists('blm-sellable-stroke');
     }
 });
 
-function applyHillshadeSettings() {
-    const shadowColor = document.getElementById('hillshade-shadow-color').value;
-    const highlightColor = document.getElementById('hillshade-highlight-color').value;
-    const illumination = parseFloat(document.getElementById('hillshade-illumination').value);
-    const exaggeration = parseFloat(document.getElementById('hillshade-exaggeration').value);
+document.getElementById('fs-sellable-stroke-toggle').addEventListener('change', function(e) {
+    if (e.target.checked) {
+        addFSSellableStroke();
+    } else {
+        removeLayerIfExists('fs-sellable-stroke');
+    }
+});
+
+function addBLMSellableStroke() {
+    const colorEl = document.getElementById('blm-sellable-stroke-color');
+    const widthEl = document.getElementById('blm-sellable-stroke-width');
     
-    removeLayerIfExists('hillshade-layer');
+    removeLayerIfExists('blm-sellable-stroke');
     
     map.addLayer({
-        id: 'hillshade-layer',
-        type: 'hillshade',
-        source: 'mapbox-dem',
+        id: 'blm-sellable-stroke',
+        type: 'line',
+        source: 'blm-sellable',
+        'source-layer': 'blm_sellable',
         paint: {
-            'hillshade-shadow-color': shadowColor,
-            'hillshade-highlight-color': highlightColor,
-            'hillshade-illumination-direction': illumination,
-            'hillshade-exaggeration': exaggeration
-        }
-    }, 'blm-all-fill');
-}
-
-['hillshade-shadow-color', 'hillshade-highlight-color', 'hillshade-illumination', 'hillshade-exaggeration'].forEach(id => {
-    document.getElementById(id).addEventListener('input', function() {
-        if (document.getElementById('hillshade-toggle').checked) {
-            applyHillshadeSettings();
+            'line-color': colorEl ? colorEl.value : '#CC8800',
+            'line-width': widthEl ? parseFloat(widthEl.value) : 0.1,
+            'line-opacity': 0.8
+        },
+        layout: {
+            'visibility': 'visible'
         }
     });
-});
+}
 
-// Sky Controls
-document.getElementById('sky-toggle').addEventListener('change', function(e) {
-    if (e.target.checked) {
-        applySkySettings();
-    } else {
-        removeLayerIfExists('sky');
-    }
-});
-
-function applySkySettings() {
-    const sunIntensity = parseFloat(document.getElementById('sky-sun-intensity').value);
-    const sunX = parseFloat(document.getElementById('sky-sun-x').value);
-    const sunY = parseFloat(document.getElementById('sky-sun-y').value);
+function addFSSellableStroke() {
+    const colorEl = document.getElementById('fs-sellable-stroke-color');
+    const widthEl = document.getElementById('fs-sellable-stroke-width');
     
-    removeLayerIfExists('sky');
+    removeLayerIfExists('fs-sellable-stroke');
     
     map.addLayer({
-        id: 'sky',
-        type: 'sky',
+        id: 'fs-sellable-stroke',
+        type: 'line',
+        source: 'fs-sellable',
+        'source-layer': 'fs_sellable',
         paint: {
-            'sky-type': 'atmosphere',
-            'sky-atmosphere-sun': [sunX, sunY],
-            'sky-atmosphere-sun-intensity': sunIntensity
+            'line-color': colorEl ? colorEl.value : '#0D4D0D',
+            'line-width': widthEl ? parseFloat(widthEl.value) : 0.1,
+            'line-opacity': 0.8
+        },
+        layout: {
+            'visibility': 'visible'
         }
     });
 }
 
-['sky-sun-intensity', 'sky-sun-x', 'sky-sun-y'].forEach(id => {
+// BLM Sellable Stroke Controls
+['blm-sellable-stroke-color', 'blm-sellable-stroke-width'].forEach(id => {
     document.getElementById(id).addEventListener('input', function() {
-        if (document.getElementById('sky-toggle').checked) {
-            applySkySettings();
+        if (document.getElementById('blm-sellable-stroke-toggle').checked) {
+            if (id.includes('color')) {
+                map.setPaintProperty('blm-sellable-stroke', 'line-color', this.value);
+                const textInput = document.getElementById(id + '-text');
+                if (textInput) textInput.value = this.value;
+            } else {
+                map.setPaintProperty('blm-sellable-stroke', 'line-width', parseFloat(this.value));
+                document.getElementById(id + '-value').textContent = this.value;
+            }
         }
     });
 });
 
-// Fog Controls
-document.getElementById('fog-toggle').addEventListener('change', function(e) {
-    if (e.target.checked) {
-        applyFogSettings();
-    } else {
-        map.setFog(null);
+// FS Sellable Stroke Controls
+['fs-sellable-stroke-color', 'fs-sellable-stroke-width'].forEach(id => {
+    document.getElementById(id).addEventListener('input', function() {
+        if (document.getElementById('fs-sellable-stroke-toggle').checked) {
+            if (id.includes('color')) {
+                map.setPaintProperty('fs-sellable-stroke', 'line-color', this.value);
+                const textInput = document.getElementById(id + '-text');
+                if (textInput) textInput.value = this.value;
+            } else {
+                map.setPaintProperty('fs-sellable-stroke', 'line-width', parseFloat(this.value));
+                document.getElementById(id + '-value').textContent = this.value;
+            }
+        }
+    });
+});
+
+// Text input handlers for stroke colors
+document.getElementById('blm-sellable-stroke-color-text').addEventListener('input', function() {
+    if (/^#[0-9A-F]{6}$/i.test(this.value)) {
+        document.getElementById('blm-sellable-stroke-color').value = this.value;
+        if (document.getElementById('blm-sellable-stroke-toggle').checked) {
+            map.setPaintProperty('blm-sellable-stroke', 'line-color', this.value);
+        }
     }
 });
 
-function applyFogSettings() {
-    const color = document.getElementById('fog-color').value;
-    const horizonBlend = parseFloat(document.getElementById('fog-horizon-blend').value);
-    const distance = parseFloat(document.getElementById('fog-distance').value);
-    
-    const rangeMin = 0.5;
-    const rangeMax = 0.5 + (distance / 10);
-    
-    map.setFog({
-        'color': color,
-        'horizon-blend': horizonBlend,
-        'range': [rangeMin, rangeMax]
-    });
-}
-
-['fog-color', 'fog-horizon-blend', 'fog-distance'].forEach(id => {
-    document.getElementById(id).addEventListener('input', function() {
-        if (document.getElementById('fog-toggle').checked) {
-            applyFogSettings();
+document.getElementById('fs-sellable-stroke-color-text').addEventListener('input', function() {
+    if (/^#[0-9A-F]{6}$/i.test(this.value)) {
+        document.getElementById('fs-sellable-stroke-color').value = this.value;
+        if (document.getElementById('fs-sellable-stroke-toggle').checked) {
+            map.setPaintProperty('fs-sellable-stroke', 'line-color', this.value);
         }
-    });
+    }
 });
+
+
 
 // Helper function
 function removeLayerIfExists(layerId) {
@@ -366,15 +337,12 @@ document.getElementById('map-style-select').addEventListener('change', function(
             restoreLayerStates(currentLayers);
         }, 100);
         
-        // Re-apply custom effects
-        if (document.getElementById('hillshade-toggle').checked) {
-            applyHillshadeSettings();
+        // Re-apply stroke effects
+        if (document.getElementById('blm-sellable-stroke-toggle').checked) {
+            addBLMSellableStroke();
         }
-        if (document.getElementById('sky-toggle').checked) {
-            applySkySettings();
-        }
-        if (document.getElementById('fog-toggle').checked) {
-            applyFogSettings();
+        if (document.getElementById('fs-sellable-stroke-toggle').checked) {
+            addFSSellableStroke();
         }
     });
 });
@@ -537,7 +505,7 @@ function addVectorLayers() {
                 'text-size': 10,
                 'text-offset': [0, 0],
                 'text-anchor': 'center',
-                'visibility': 'visible'
+                'visibility': 'none'
             },
             paint: {
                 'text-color': '#ffffff',
