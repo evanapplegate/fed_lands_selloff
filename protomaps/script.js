@@ -28,9 +28,8 @@ const map = new maplibregl.Map({
     projection: 'globe'
 });
 
-// Terrain disabled - token issues
 map.on('style.load', () => {
-    // No terrain for now
+    // Style loaded - terrain will be restored if enabled
 });
 
 // Use a variable to track if initial layers are added
@@ -39,6 +38,12 @@ let initialLayersAdded = false;
 map.on('load', () => {
     addVectorLayers();
     initialLayersAdded = true;
+    
+    // Load the default selected basemap
+    const defaultStyle = document.getElementById('map-style-select').value;
+    if (defaultStyle && defaultStyle !== 'blank') {
+        loadBasemap(defaultStyle);
+    }
     
     // Change cursor on hover
     ['blm-all-fill', 'fs-all-fill', 'blm-sellable-fill', 'fs-sellable-fill'].forEach(layer => {
@@ -150,16 +155,46 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
-// Terrain Controls - DISABLED (token issues)
+// Terrain Controls
 document.getElementById('terrain-toggle').addEventListener('change', function(e) {
-    // Terrain disabled due to token issues
-    e.target.checked = false;
-    alert('Terrain disabled - token expired');
+    if (e.target.checked) {
+        enableTerrain();
+    } else {
+        disableTerrain();
+    }
 });
 
 document.getElementById('terrain-exaggeration').addEventListener('input', function(e) {
-    // Terrain disabled
+    const exaggeration = parseFloat(e.target.value);
+    if (map.getTerrain()) {
+        map.setTerrain({
+            source: 'terrain-source',
+            exaggeration: exaggeration
+        });
+    }
 });
+
+function enableTerrain() {
+    // Add terrain source if it doesn't exist
+    if (!map.getSource('terrain-source')) {
+        map.addSource('terrain-source', {
+            type: 'raster-dem',
+            url: 'https://demotiles.maplibre.org/terrain-tiles/tiles.json',
+            tileSize: 256
+        });
+    }
+    
+    // Enable terrain
+    const exaggeration = parseFloat(document.getElementById('terrain-exaggeration').value);
+    map.setTerrain({
+        source: 'terrain-source',
+        exaggeration: exaggeration
+    });
+}
+
+function disableTerrain() {
+    map.setTerrain(null);
+}
 
 // Stroke Controls
 document.getElementById('blm-sellable-stroke-toggle').addEventListener('change', function(e) {
@@ -319,22 +354,27 @@ function transformStyleUrls(style, accessToken) {
     return style;
 }
 
-// Map Style Controls
-document.getElementById('map-style-select').addEventListener('change', async function(e) {
-    const newStyleValue = e.target.value;
-    const layerStates = getCurrentLayerStates();
+// Basemap loading function
+async function loadBasemap(styleUrl, preserveView = true) {
+    const layerStates = preserveView ? getCurrentLayerStates() : null;
     
-    // Preserve view state
-    const { lng, lat } = map.getCenter();
-    const zoom = map.getZoom();
-    const bearing = map.getBearing();
-    const pitch = map.getPitch();
+    // Preserve view state if requested
+    let viewState = null;
+    if (preserveView) {
+        const { lng, lat } = map.getCenter();
+        viewState = {
+            center: { lng, lat },
+            zoom: map.getZoom(),
+            bearing: map.getBearing(),
+            pitch: map.getPitch()
+        };
+    }
 
     let baseStyle;
     const accessToken = 'pk.eyJ1Ijoiam9ubml3YWxrZXIiLCJhIjoiY2loeG82cWplMDA4N3cxa3MzZXU2N2JpYSJ9.H6vPKI0UKLv733mSCXh2Lw';
 
     try {
-        if (newStyleValue === 'blank') {
+        if (styleUrl === 'blank') {
             baseStyle = {
                 version: 8,
                 sources: {},
@@ -346,13 +386,13 @@ document.getElementById('map-style-select').addEventListener('change', async fun
                 glyphs: "https://fonts.openmaptiles.org/{fontstack}/{range}.pbf"
             };
         } else {
-            const response = await fetch(newStyleValue);
+            const response = await fetch(styleUrl);
             baseStyle = await response.json();
             baseStyle = transformStyleUrls(baseStyle, accessToken);
         }
     } catch (error) {
         console.error("Failed to load or transform style:", error);
-        alert("Could not load the selected map style.");
+        if (preserveView) alert("Could not load the selected map style.");
         return;
     }
 
@@ -363,15 +403,30 @@ document.getElementById('map-style-select').addEventListener('change', async fun
     map.setStyle(baseStyle, { diff: false });
 
     map.once('idle', () => {
-         restoreLayerStates(layerStates);
-         map.setCenter({ lng, lat });
-         map.setZoom(zoom);
-         map.setBearing(bearing);
-         map.setPitch(pitch);
+        if (preserveView && layerStates) {
+            restoreLayerStates(layerStates);
+        }
+        if (preserveView && viewState) {
+            map.setCenter(viewState.center);
+            map.setZoom(viewState.zoom);
+            map.setBearing(viewState.bearing);
+            map.setPitch(viewState.pitch);
+        }
 
-         if (document.getElementById('blm-sellable-stroke-toggle').checked) addBLMSellableStroke();
-         if (document.getElementById('fs-sellable-stroke-toggle').checked) addFSSellableStroke();
+        // Restore terrain if it was enabled
+        if (document.getElementById('terrain-toggle').checked) {
+            enableTerrain();
+        }
+
+        if (document.getElementById('blm-sellable-stroke-toggle').checked) addBLMSellableStroke();
+        if (document.getElementById('fs-sellable-stroke-toggle').checked) addFSSellableStroke();
     });
+}
+
+// Map Style Controls
+document.getElementById('map-style-select').addEventListener('change', async function(e) {
+    const newStyleValue = e.target.value;
+    await loadBasemap(newStyleValue, true);
 });
 
 function getCurrentLayerStates() {
