@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='utf-8' />
+    <title>Land Selloff Map</title>
+    <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+    <script src='https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.js'></script>
+    <link href='https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.css' rel='stylesheet' />
+    <script src="https://unpkg.com/pmtiles@3.0.6/dist/pmtiles.js"></script>
+    <link href='styles.css' rel='stylesheet' />
+</head>
+<body>
+
+<div id='map'></div>
+
+<!-- Terrain Editor Controls -->
+<div class="terrain-controls collapsed" id="terrain-controls">
+    <div class="control-header" onclick="toggleTerrainControls()">
+        <span>Display Options</span>
+        <span id="collapse-icon">+</span>
+    </div>
+    <div class="control-content">
+        <!-- Map Style Settings -->
+        <div class="control-group">
+            <h4>Map Style</h4>
+            <div class="control-item">
+                <label>Base Style</label>
+                <select id="map-style-select">
+                    <option value="https://api.mapbox.com/styles/v1/mapbox/cjerxnqt3cgvp2rmyuxbeqme7?access_token=pk.eyJ1Ijoiam9ubml3YWxrZXIiLCJhIjoiY2loeG82cWplMDA4N3cxa3MzZXU2N2JpYSJ9.H6vPKI0UKLv733mSCXh2Lw" selected>Cali Terrain</option>
+                    <option value="https://api.mapbox.com/styles/v1/mapbox/outdoors-v12?access_token=pk.eyJ1Ijoiam9ubml3YWxrZXIiLCJhIjoiY2loeG82cWplMDA4N3cxa3MzZXU2N2JpYSJ9.H6vPKI0UKLv733mSCXh2Lw">Outdoors</option>
+                    <option value="https://api.mapbox.com/styles/v1/mapbox/satellite-v9?access_token=pk.eyJ1Ijoiam9ubml3YWxrZXIiLCJhIjoiY2loeG82cWplMDA4N3cxa3MzZXU2N2JpYSJ9.H6vPKI0UKLv733mSCXh2Lw">Satellite</option>
+                    <option value="https://api.mapbox.com/styles/v1/mapbox/satellite-streets-v12?access_token=pk.eyJ1Ijoiam9ubml3YWxrZXIiLCJhIjoiY2loeG82cWplMDA4N3cxa3MzZXU2N2JpYSJ9.H6vPKI0UKLv733mSCXh2Lw">Satellite Streets</option>
+                    <option value="https://api.mapbox.com/styles/v1/mapbox/light-v11?access_token=pk.eyJ1Ijoiam9ubml3YWxrZXIiLCJhIjoiY2loeG82cWplMDA4N3cxa3MzZXU2N2JpYSJ9.H6vPKI0UKLv733mSCXh2Lw">Light</option>
+                    <option value="https://api.mapbox.com/styles/v1/mapbox/dark-v11?access_token=pk.eyJ1Ijoiam9ubml3YWxrZXIiLCJhIjoiY2loeG82cWplMDA4N3cxa3MzZXU2N2JpYSJ9.H6vPKI0UKLv733mSCXh2Lw">Dark</option>
+                    <option value="blank">Blank</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Layer Styling -->
+        <div class="control-group">
+            <h4>Layer Styling</h4>
+            
+            <!-- BLM All Styling -->
+            <div class="control-item">
+                <label>BLM All Color</label>
+                <div class="color-group">
+                    <input type="color" id="blm-all-color" value="#FFD700">
+                    <input type="text" id="blm-all-color-text" value="#FFD700">
+                </div>
+            </div>
+            <div class="control-item">
+                <label>BLM All Opacity</label>
+                <input type="range" id="blm-all-opacity" min="0" max="1" step="0.1" value="0.3">
+                <span class="range-value" id="blm-all-opacity-value">0.6</span>
+            </div>
+
+            <!-- FS All Styling -->
+            <div class="control-item">
+                <label>FS All Color</label>
+                <div class="color-group">
+                    <input type="color" id="fs-all-color" value="#228B22">
+                    <input type="text" id="fs-all-color-text" value="#228B22">
+                </div>
+            </div>
+            <div class="control-item">
+                <label>FS All Opacity</label>
+                <input type="range" id="fs-all-opacity" min="0" max="1" step="0.1" value="0.3">
+                <span class="range-value" id="fs-all-opacity-value">0.6</span>
+            </div>
+
+            <!-- BLM Sellable Styling -->
+            <div class="control-item">
+                <label>BLM Sellable Color</label>
+                <div class="color-group">
+                    <input type="color" id="blm-sellable-color" value="#FFB400">
+                    <input type="text" id="blm-sellable-color-text" value="#FFB400">
+                </div>
+            </div>
+            <div class="control-item">
+                <label>BLM Sellable Opacity</label>
+                <input type="range" id="blm-sellable-opacity" min="0" max="1" step="0.1" value="0.6">
+                <span class="range-value" id="blm-sellable-opacity-value">0.6</span>
+            </div>
+
+            <!-- FS Sellable Styling -->
+            <div class="control-item">
+                <label>FS Sellable Color</label>
+                <div class="color-group">
+                    <input type="color" id="fs-sellable-color" value="#126612">
+                    <input type="text" id="fs-sellable-color-text" value="#126612">
+                </div>
+            </div>
+            <div class="control-item">
+                <label>FS Sellable Opacity</label>
+                <input type="range" id="fs-sellable-opacity" min="0" max="1" step="0.1" value="0.6">
+                <span class="range-value" id="fs-sellable-opacity-value">0.6</span>
+            </div>
+
+            <!-- BLM Sellable Stroke -->
+            <div class="control-item">
+                <input type="checkbox" id="blm-sellable-stroke-toggle">
+                <label for="blm-sellable-stroke-toggle">BLM Sellable Stroke</label>
+            </div>
+            <div class="control-item">
+                <label>BLM Stroke Color</label>
+                <div class="color-group">
+                    <input type="color" id="blm-sellable-stroke-color" value="#CC8800">
+                    <input type="text" id="blm-sellable-stroke-color-text" value="#CC8800">
+                </div>
+            </div>
+            <div class="control-item">
+                <label>BLM Stroke Width</label>
+                <input type="range" id="blm-sellable-stroke-width" min="0.1" max="5" step="0.1" value="0.1">
+                <span class="range-value" id="blm-sellable-stroke-width-value">0.1</span>
+            </div>
+
+            <!-- FS Sellable Stroke -->
+            <div class="control-item">
+                <input type="checkbox" id="fs-sellable-stroke-toggle">
+                <label for="fs-sellable-stroke-toggle">FS Sellable Stroke</label>
+            </div>
+            <div class="control-item">
+                <label>FS Stroke Color</label>
+                <div class="color-group">
+                    <input type="color" id="fs-sellable-stroke-color" value="#0D4D0D">
+                    <input type="text" id="fs-sellable-stroke-color-text" value="#0D4D0D">
+                </div>
+            </div>
+            <div class="control-item">
+                <label>FS Stroke Width</label>
+                <input type="range" id="fs-sellable-stroke-width" min="0.1" max="5" step="0.1" value="0.1">
+                <span class="range-value" id="fs-sellable-stroke-width-value">0.1</span>
+            </div>
+        </div>
+
+        <!-- Terrain Settings -->
+        <div class="control-group">
+            <h4>Terrain</h4>
+            <div class="control-item">
+                <input type="checkbox" id="terrain-toggle" checked>
+                <label for="terrain-toggle">Enable 3D Terrain</label>
+            </div>
+            <div class="control-item">
+                <label>Exaggeration</label>
+                <input type="range" id="terrain-exaggeration" min="0.1" max="5" step="0.1" value="3">
+                <span class="range-value" id="terrain-exaggeration-value">3</span>
+            </div>
+        </div>
+
+
+    </div>
+</div>
+
+<!-- About Panel -->
+<div class="about-panel collapsed" id="about-panel">
+    <div class="control-header" onclick="toggleAboutPanel()">
+        <span>About</span>
+        <span id="about-collapse-icon">+</span>
+    </div>
+    <div class="about-content">
+        <p>Analysis of public lands exposed to sale via Phil Hartger at The Wilderness Society;</p>
+        <p>You can load these layers into QGIS via "Add ArcGIS REST server layer"</p>
+        <p><a href="https://services1.arcgis.com/IAQQkLXctKHrf8Av/arcgis/rest/services/BLM_lands_available_for_sale_061625/FeatureServer" target="_blank">https://services1.arcgis.com/IAQQkLXctKHrf8Av/arcgis/rest/services/BLM_lands_available_for_sale_061625/FeatureServer</a></p>
+        <p><a href="https://services1.arcgis.com/IAQQkLXctKHrf8Av/arcgis/rest/services/USFS_lands_available_for_sale_061625/FeatureServer" target="_blank">https://services1.arcgis.com/IAQQkLXctKHrf8Av/arcgis/rest/services/USFS_lands_available_for_sale_061625/FeatureServer</a></p>
+        <p>"Sellable" lands were created by deleting portions that were part of the following categories declared exempt from "disposal" requirements listed in the June 2025 reconciliation bill: <a href="https://energy.senate.gov/services/files/DF7B7FBE-9866-4B69-8ACA-C661A4F18096" target="_blank">https://energy.senate.gov/services/files/DF7B7FBE-9866-4B69-8ACA-C661A4F18096</a> excluded:</p>
+        <ol>
+            <li>National Monuments</li>
+            <li>National Recreation Areas</li>
+            <li>National Wilderness Preservation System units</li>
+            <li>National Wild and Scenic Rivers</li>
+            <li>National Trails System</li>
+            <li>National Conservation Areas</li>
+            <li>National Wildlife Refuge System</li>
+            <li>National Fish Hatchery System</li>
+            <li>National Park System, National Preserves</li>
+            <li>National Seashores / Lakeshores</li>
+            <li>National Historic Sites</li>
+            <li>National Memorials</li>
+            <li>National Battlefields / Battlefield Parks / Sites / Military Parks</li>
+            <li>National Historical Parks</li>
+        </ol>
+        <p>Apparently leaving these exposed for sale:</p>
+        <ol>
+            <li>Wilderness Study Areas</li>
+            <li>Inventoried Roadless Areas</li>
+            <li>Areas of Critical Environmental Concern (ACECs)</li>
+            <li>Critical habitat (ESA)</li>
+            <li>Grazing lands</li>
+            <li>BLM and Forest Service lands not explicitly protected</li>
+        </ol>
+    </div>
+</div>
+
+<div class="layer-controls">
+    <div class="layer-toggle">
+        <input type="checkbox" id="toggle-fs-labels">
+        <label for="toggle-fs-labels">
+            <span class="color-pip text" style="color: #ffffff;">A</span>
+            Forest Labels
+        </label>
+    </div>
+    <div class="layer-toggle">
+        <input type="checkbox" id="toggle-blm-sellable" checked>
+        <label for="toggle-blm-sellable">
+            <span class="color-pip fill" style="background-color: #FFB400;"></span>
+            BLM land, sellable
+        </label>
+    </div>
+    <div class="layer-toggle">
+        <input type="checkbox" id="toggle-blm-all" checked>
+        <label for="toggle-blm-all">
+            <span class="color-pip fill" style="background-color: #FFD700;"></span>
+            BLM land
+        </label>
+    </div>
+    <div class="layer-toggle">
+        <input type="checkbox" id="toggle-fs-sellable" checked>
+        <label for="toggle-fs-sellable">
+            <span class="color-pip fill" style="background-color: #126612;"></span>
+            National Forest land, sellabe
+        </label>
+    </div>
+    <div class="layer-toggle">
+        <input type="checkbox" id="toggle-fs-all" checked>
+        <label for="toggle-fs-all">
+            <span class="color-pip fill" style="background-color: #228B22;"></span>
+            National Forest land
+        </label>
+    </div>
+</div>
+
+<script src="script.js"></script>
+
+</body>
+</html> 
