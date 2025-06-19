@@ -1,6 +1,13 @@
-// Register PMTiles protocol for MapLibre GL JS
+// Register PMTiles protocol for MapLibre GL JS with error handling
 let protocol = new pmtiles.Protocol();
-maplibregl.addProtocol("pmtiles", protocol.tile);
+maplibregl.addProtocol("pmtiles", (params, callback) => {
+    try {
+        return protocol.tile(params, callback);
+    } catch (error) {
+        console.warn('PMTiles protocol error:', error);
+        callback(error);
+    }
+});
 
 // UPDATE THIS WITH YOUR PAID MAPBOX TOKEN
 const MAPBOX_ACCESS_TOKEN = 'pk.eyJ1IjoiZXZhbmRhcHBsZWdhdGUiLCJhIjoiY2tmbzA1cWM1MWozeTM4cXV4eHUwMzFhdiJ9.Z5f9p8jJD_N1MQwycF2NEw'; // REPLACE WITH YOUR TOKEN
@@ -51,6 +58,10 @@ let initialLayersAdded = false;
 map.on('load', () => {
     addVectorLayers();
     initialLayersAdded = true;
+    
+    // Set default terrain exaggeration to 2
+    document.getElementById('terrain-exaggeration').value = 2;
+    document.getElementById('terrain-exaggeration-value').textContent = '2';
     
     // Load the default selected basemap
     const defaultStyle = document.getElementById('map-style-select').value;
@@ -400,6 +411,15 @@ async function loadBasemap(styleUrl, preserveView = true) {
     baseStyle.sources = { ...baseStyle.sources, ...getCustomSources() };
     baseStyle.layers = [...baseStyle.layers, ...getCustomLayers()];
     
+    // Add terrain source to every style
+    baseStyle.sources['aws-terrain'] = {
+        type: 'raster-dem',
+        tiles: ['https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png'],
+        tileSize: 256,
+        maxzoom: 15,
+        encoding: 'terrarium'
+    };
+    
     map.setStyle(baseStyle, { diff: false });
 
     map.once('idle', () => {
@@ -415,6 +435,14 @@ async function loadBasemap(styleUrl, preserveView = true) {
 
         if (document.getElementById('blm-sellable-stroke-toggle').checked) addBLMSellableStroke();
         if (document.getElementById('fs-sellable-stroke-toggle').checked) addFSSellableStroke();
+        
+        // Restore terrain if it was enabled
+        if (preserveView && layerStates && layerStates.terrain) {
+            map.setTerrain({ source: 'aws-terrain', exaggeration: layerStates.terrainExaggeration });
+        } else if (!preserveView && document.getElementById('terrain-toggle').checked) {
+            const exaggeration = parseFloat(document.getElementById('terrain-exaggeration').value) || 2;
+            map.setTerrain({ source: 'aws-terrain', exaggeration: exaggeration });
+        }
     });
 }
 
@@ -430,7 +458,9 @@ function getCurrentLayerStates() {
         fsAll: document.getElementById('toggle-fs-all').checked,
         blmSellable: document.getElementById('toggle-blm-sellable').checked,
         fsSellable: document.getElementById('toggle-fs-sellable').checked,
-        fsLabels: document.getElementById('toggle-fs-labels').checked
+        fsLabels: document.getElementById('toggle-fs-labels').checked,
+        terrain: document.getElementById('terrain-toggle').checked,
+        terrainExaggeration: parseFloat(document.getElementById('terrain-exaggeration').value) || 2
     };
 }
 
