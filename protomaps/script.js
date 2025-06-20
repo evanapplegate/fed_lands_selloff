@@ -18,6 +18,7 @@ const map = new maplibregl.Map({
         version: 8,
         sources: {},
         glyphs: "https://fonts.openmaptiles.org/{fontstack}/{range}.pbf",
+        projection: { type: "vertical-perspective" },
         layers: [
             {
                 id: 'background',
@@ -32,8 +33,7 @@ const map = new maplibregl.Map({
     zoom: 3,
     pitch: 0,
     bearing: 0,
-    antialias: true,
-    projection: 'globe'
+    antialias: true
 });
 
 // Terrain functionality  
@@ -44,7 +44,7 @@ map.on('style.load', () => {
             type: 'raster-dem',
             tiles: ['https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png'],
             tileSize: 256,
-            maxzoom: 15,
+            maxzoom: 18,
             encoding: 'terrarium'
         });
     }
@@ -58,6 +58,9 @@ let initialLayersAdded = false;
 map.on('load', () => {
     addVectorLayers();
     initialLayersAdded = true;
+    
+    // // Force globe projection
+    // map.setProjection('globe');
     
     // Set default terrain exaggeration to 2
     document.getElementById('terrain-exaggeration').value = 2;
@@ -407,7 +410,8 @@ async function loadBasemap(styleUrl, preserveView = true) {
         return;
     }
 
-    baseStyle.projection = { name: 'globe' };
+    // Force vertical-perspective projection for every basemap
+    baseStyle.projection = { type: 'vertical-perspective' };
     baseStyle.sources = { ...baseStyle.sources, ...getCustomSources() };
     baseStyle.layers = [...baseStyle.layers, ...getCustomLayers()];
     
@@ -416,7 +420,7 @@ async function loadBasemap(styleUrl, preserveView = true) {
         type: 'raster-dem',
         tiles: ['https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png'],
         tileSize: 256,
-        maxzoom: 15,
+        maxzoom: 18,
         encoding: 'terrarium'
     };
     
