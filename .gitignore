@@ -15,3 +15,9 @@ Thumbs.db
 # Logs
 *.log protomaps/data/*.pmtiles
 protomaps/pmtiles_Darwin_arm64.tar.gz
+
+# ProtMaps directories
+/protomaps/node_modules
+/protomaps/cert.pem
+/protomaps/key.pem
+/protomaps/data/
