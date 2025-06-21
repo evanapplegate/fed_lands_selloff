@@ -404,63 +404,27 @@ async function loadBasemap(styleUrl, preserveView = true) {
             baseStyle = await response.json();
             baseStyle = transformStyleUrls(baseStyle, MAPBOX_ACCESS_TOKEN);
             
-            // Remove problematic v4 API sources and fix HTTP URLs
+            // Force all Mapbox URLs to HTTPS
             if (baseStyle.sources) {
                 Object.keys(baseStyle.sources).forEach(sourceId => {
                     const source = baseStyle.sources[sourceId];
                     
-                    // Remove sources that use v4 API or problematic HTTP endpoints
-                    if (source.url && (
-                        source.url.includes('/v4/') || 
-                        source.url.includes('mapbox-terrain') ||
-                        source.url.includes('mapbox-bathymetry') ||
-                        source.url.startsWith('http://')
-                    )) {
-                        console.warn(`Removing problematic source: ${sourceId} - ${source.url}`);
-                        delete baseStyle.sources[sourceId];
-                        return;
+                    // Convert HTTP to HTTPS in source URLs
+                    if (source.url && source.url.startsWith('http://')) {
+                        console.warn(`Converting source URL HTTP to HTTPS: ${sourceId} - ${source.url}`);
+                        source.url = source.url.replace('http://', 'https://');
                     }
                     
+                    // Convert HTTP to HTTPS in tile URLs
                     if (source.tiles) {
-                        // Check if any tiles use problematic endpoints
-                        const hasProblematicTiles = source.tiles.some(tile => 
-                            tile.includes('/v4/') || 
-                            tile.includes('mapbox-terrain') ||
-                            tile.includes('mapbox-bathymetry') ||
-                            tile.startsWith('http://')
-                        );
-                        
-                        if (hasProblematicTiles) {
-                            console.warn(`Removing source with problematic tiles: ${sourceId}`);
-                            delete baseStyle.sources[sourceId];
-                            return;
-                        }
-                        
-                        // Convert remaining HTTP to HTTPS
                         source.tiles = source.tiles.map(tile => {
                             if (tile.startsWith('http://')) {
-                                console.warn(`Converting HTTP to HTTPS: ${tile}`);
+                                console.warn(`Converting tile HTTP to HTTPS: ${tile}`);
                                 return tile.replace('http://', 'https://');
                             }
                             return tile;
                         });
                     }
-                    
-                    if (source.url && source.url.startsWith('http://')) {
-                        console.warn(`Converting HTTP to HTTPS: ${source.url}`);
-                        source.url = source.url.replace('http://', 'https://');
-                    }
-                });
-            }
-            
-            // Also remove any layers that reference removed sources
-            if (baseStyle.layers) {
-                baseStyle.layers = baseStyle.layers.filter(layer => {
-                    if (layer.source && !baseStyle.sources[layer.source]) {
-                        console.warn(`Removing layer ${layer.id} - source ${layer.source} was removed`);
-                        return false;
-                    }
-                    return true;
                 });
             }
         }
@@ -484,51 +448,42 @@ async function loadBasemap(styleUrl, preserveView = true) {
         encoding: 'terrarium'
     };
     
+    // Set up request transform to force all HTTP requests to HTTPS
+    map.setTransformRequest((url, resourceType) => {
+        if (url.startsWith('http://')) {
+            const httpsUrl = url.replace('http://', 'https://');
+            console.warn(`Transforming HTTP request to HTTPS: ${url} -> ${httpsUrl}`);
+            return { url: httpsUrl };
+        }
+        return { url };
+    });
+    
     map.setStyle(baseStyle, { diff: false });
 
     map.once('idle', () => {
-        // Aggressively remove any remaining problematic sources after style load
+        // Force any remaining HTTP sources to HTTPS after style load
         const style = map.getStyle();
         if (style.sources) {
             Object.keys(style.sources).forEach(sourceId => {
                 const source = style.sources[sourceId];
                 
-                // Remove any source with HTTP tiles or v4 API references
-                const isProblematic = (source.tiles && source.tiles.some(tile => 
-                    tile.startsWith('http://') || 
-                    tile.includes('/v4/') ||
-                    tile.includes('mapbox-terrain') ||
-                    tile.includes('mapbox-bathymetry')
-                )) || (source.url && (
-                    source.url.startsWith('http://') ||
-                    source.url.includes('/v4/') ||
-                    source.url.includes('mapbox-terrain') ||
-                    source.url.includes('mapbox-bathymetry')
-                ));
-                
-                if (isProblematic) {
-                    console.warn(`Found problematic source in loaded style, removing: ${sourceId}`);
-                    try {
-                        map.removeSource(sourceId);
-                    } catch (e) {
-                        console.warn(`Could not remove source ${sourceId}:`, e);
+                // Check for HTTP URLs and convert them to HTTPS
+                if (source.tiles) {
+                    const httpTiles = source.tiles.filter(tile => tile.startsWith('http://'));
+                    if (httpTiles.length > 0) {
+                        console.warn(`Found HTTP tiles in loaded style for ${sourceId}, converting to HTTPS`);
+                        source.tiles = source.tiles.map(tile => 
+                            tile.startsWith('http://') ? tile.replace('http://', 'https://') : tile
+                        );
                     }
+                }
+                
+                if (source.url && source.url.startsWith('http://')) {
+                    console.warn(`Found HTTP source URL in loaded style for ${sourceId}, converting to HTTPS`);
+                    source.url = source.url.replace('http://', 'https://');
                 }
             });
         }
-        
-        // Also remove any layers that reference removed sources
-        const layers = map.getStyle().layers;
-        layers.forEach(layer => {
-            if (layer.source && !map.getSource(layer.source)) {
-                console.warn(`Removing layer ${layer.id} - source ${layer.source} no longer exists`);
-                try {
-                    map.removeLayer(layer.id);
-                } catch (e) {
-                    console.warn(`Could not remove layer ${layer.id}:`, e);
-                }
-            }
-        });
         
         if (preserveView && layerStates) {
             restoreLayerStates(layerStates);
