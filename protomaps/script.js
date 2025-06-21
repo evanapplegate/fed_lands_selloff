@@ -403,6 +403,26 @@ async function loadBasemap(styleUrl, preserveView = true) {
             const response = await fetch(styleUrl);
             baseStyle = await response.json();
             baseStyle = transformStyleUrls(baseStyle, MAPBOX_ACCESS_TOKEN);
+            
+            // Fix HTTP URLs to HTTPS for all sources
+            if (baseStyle.sources) {
+                Object.keys(baseStyle.sources).forEach(sourceId => {
+                    const source = baseStyle.sources[sourceId];
+                    if (source.tiles) {
+                        source.tiles = source.tiles.map(tile => {
+                            if (tile.startsWith('http://')) {
+                                console.warn(`Converting HTTP to HTTPS: ${tile}`);
+                                return tile.replace('http://', 'https://');
+                            }
+                            return tile;
+                        });
+                    }
+                    if (source.url && source.url.startsWith('http://')) {
+                        console.warn(`Converting HTTP to HTTPS: ${source.url}`);
+                        source.url = source.url.replace('http://', 'https://');
+                    }
+                });
+            }
         }
     } catch (error) {
         console.error("Failed to load or transform style:", error);
@@ -427,6 +447,22 @@ async function loadBasemap(styleUrl, preserveView = true) {
     map.setStyle(baseStyle, { diff: false });
 
     map.once('idle', () => {
+        // Double-check for any remaining HTTP sources after style load
+        const style = map.getStyle();
+        if (style.sources) {
+            Object.keys(style.sources).forEach(sourceId => {
+                const source = style.sources[sourceId];
+                if (source.tiles && source.tiles.some(tile => tile.startsWith('http://'))) {
+                    console.warn(`Found HTTP tiles in loaded style, removing source: ${sourceId}`);
+                    try {
+                        map.removeSource(sourceId);
+                    } catch (e) {
+                        console.warn(`Could not remove source ${sourceId}:`, e);
+                    }
+                }
+            });
+        }
+        
         if (preserveView && layerStates) {
             restoreLayerStates(layerStates);
         }
