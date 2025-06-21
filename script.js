@@ -496,22 +496,22 @@ function getCustomSources() {
     return {
         'blm-all': {
             type: 'vector',
-            url: 'pmtiles:///data/blm_all_hires.pmtiles',
+            url: 'pmtiles://https://pub-fd51620b0a9c4d6c914ebb61f9549df8.r2.dev/blm_all_hires.pmtiles',
             attribution: 'BLM Data'
         },
         'fs-all': {
             type: 'vector',
-            url: 'pmtiles:///data/fs_all_hires.pmtiles',
+            url: 'pmtiles://https://pub-fd51620b0a9c4d6c914ebb61f9549df8.r2.dev/fs_all_hires.pmtiles',
             attribution: 'USFS Data'
         },
         'blm-sellable': {
             type: 'vector',
-            url: 'pmtiles:///data/blm_sellable_hires.pmtiles',
+            url: 'pmtiles://https://pub-fd51620b0a9c4d6c914ebb61f9549df8.r2.dev/blm_sellable_hires.pmtiles',
             attribution: 'BLM Sellable Data'
         },
         'fs-sellable': {
             type: 'vector',
-            url: 'pmtiles:///data/fs_sellable_hires.pmtiles',
+            url: 'pmtiles://https://pub-fd51620b0a9c4d6c914ebb61f9549df8.r2.dev/fs_sellable_hires.pmtiles',
             attribution: 'USFS Sellable Data'
         }
     };
