@@ -61,8 +61,8 @@ body {
     right: 15px;
     bottom: 200px; /* Positioned 20px above layer controls (30px + estimated height + 20px) */
     z-index: 1000;
-    width: 300px;
-    max-height: 60vh;
+    width: 210px;
+    max-height: 30vh;
     overflow-y: auto;
 }
 

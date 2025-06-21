@@ -159,35 +159,42 @@
         <span id="about-collapse-icon">+</span>
     </div>
     <div class="about-content">
-        <p>Analysis of public lands exposed to sale via Phil Hartger at The Wilderness Society;</p>
-        <p>You can load these layers into QGIS via "Add ArcGIS REST server layer"</p>
-        <p><a href="https://services1.arcgis.com/IAQQkLXctKHrf8Av/arcgis/rest/services/BLM_lands_available_for_sale_061625/FeatureServer" target="_blank">https://services1.arcgis.com/IAQQkLXctKHrf8Av/arcgis/rest/services/BLM_lands_available_for_sale_061625/FeatureServer</a></p>
-        <p><a href="https://services1.arcgis.com/IAQQkLXctKHrf8Av/arcgis/rest/services/USFS_lands_available_for_sale_061625/FeatureServer" target="_blank">https://services1.arcgis.com/IAQQkLXctKHrf8Av/arcgis/rest/services/USFS_lands_available_for_sale_061625/FeatureServer</a></p>
-        <p>"Sellable" lands were created by deleting portions that were part of the following categories declared exempt from "disposal" requirements listed in the June 2025 reconciliation bill: <a href="https://energy.senate.gov/services/files/DF7B7FBE-9866-4B69-8ACA-C661A4F18096" target="_blank">https://energy.senate.gov/services/files/DF7B7FBE-9866-4B69-8ACA-C661A4F18096</a> excluded:</p>
+        <p>Analysis of public lands exposed to sale via Phil Hartger at <a href="https://www.wilderness.org/articles/media-resources/250-million-acres-public-lands-eligible-sale-senr-bill" target="_blank">The Wilderness Society</a> using source data from BLM, USFS, USGS, NPS, and the <a href="https://energy.senate.gov/services/files/DF7B7FBE-9866-4B69-8ACA-C661A4F18096" target="_blank">SENR reconciliation bill text</a> updated June 14th, 2025.</p>
+        
+        <p><a href="https://www.dropbox.com/scl/fo/smwyjbbwr9ie5qg3dtuzd/AP10gfeav1spzd-mPAL-k1E?rlkey=q055x4j4kxf29giajlmw11m93&dl=0">Full dataset</a></p>
+
+        <p>Methods: These data were created by analyzing which public lands would be eligible for sale based on the criteria in the bill, summarized below, using GIS data for USFS and BLM lands.</p>
+        <p>Disposal mandate in bill (as of June 14, 2025):</p>
         <ol>
-            <li>National Monuments</li>
-            <li>National Recreation Areas</li>
-            <li>National Wilderness Preservation System units</li>
-            <li>National Wild and Scenic Rivers</li>
-            <li>National Trails System</li>
-            <li>National Conservation Areas</li>
-            <li>National Wildlife Refuge System</li>
-            <li>National Fish Hatchery System</li>
-            <li>National Park System, National Preserves</li>
-            <li>National Seashores / Lakeshores</li>
-            <li>National Historic Sites</li>
-            <li>National Memorials</li>
-            <li>National Battlefields / Battlefield Parks / Sites / Military Parks</li>
-            <li>National Historical Parks</li>
+            <li>Between 0.5-0.75% of all BLM lands and between 0.5-0.75% of all USFS lands (a total of between 2.02 and 3.04 million acres)</li>
+            <li>The secretaries of agriculture and interior will have 30 days to solicit nominations for lands to be sold from "any interested parties" and must publish a list every 60 days of lands eligible for sale until they've reached the quota in the bullet above. The entire sell-off must be completed within 5 years.</li>
         </ol>
-        <p>Apparently leaving these exposed for sale:</p>
+        <p>Lands eligible for disposal in the bill:</p>
         <ol>
-            <li>Wilderness Study Areas</li>
-            <li>Inventoried Roadless Areas</li>
-            <li>Areas of Critical Environmental Concern (ACECs)</li>
-            <li>Critical habitat (ESA)</li>
-            <li>Grazing lands</li>
-            <li>BLM and Forest Service lands not explicitly protected</li>
+            <li>Eligible states: AK, AZ, CA, CO, ID, NV, NM, OR, UT, WA, WY</li>
+            <li>Excludes federally protected land, defined by the bill as:
+                <ul>
+                    <li>National Monument</li>
+                    <li>National Recreation Area</li>
+                    <li>component of the National Wilderness Preservation System</li>
+                    <li>unit of the National Wild and Scenic Rivers System</li>
+                    <li>unit of the National Trails System</li>
+                    <li>National Conservation Area</li>
+                    <li>unit of the National Wildlife Refuge System</li>
+                    <li>unit of the National Fish Hatchery System</li>
+                    <li>unit of the National Park System</li>
+                    <li>National Preserve</li>
+                    <li>National Seashore or National Lakeshore</li>
+                    <li>National Historic Site</li>
+                    <li>National Memorial</li>
+                    <li>National Battlefield</li>
+                    <li>National Battlefield Park</li>
+                    <li>National Battlefield Site</li>
+                    <li>National Military Park</li>
+                    <li>National Historical Park</li>
+                </ul>
+            </li>
+            <li>Excludes lands subject to valid existing rights (understood to mean it excludes lands with property interests like oil and gas leases, rights-of-way or perfected mining claims in existence before the date of enactment of the bill)</li>
         </ol>
     </div>
 </div>
@@ -218,7 +225,7 @@
         <input type="checkbox" id="toggle-fs-sellable" checked>
         <label for="toggle-fs-sellable">
             <span class="color-pip fill" style="background-color: #126612;"></span>
-            National Forest land, sellabe
+            National Forest land, sellable
         </label>
     </div>
     <div class="layer-toggle">
