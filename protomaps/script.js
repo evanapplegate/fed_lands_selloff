@@ -61,7 +61,7 @@ function addCrosshatchPattern() {
         return; // Already loaded
     }
     
-    map.loadImage('data/hatch11.png', (error, image) => {
+    map.loadImage('./hatch11.png', (error, image) => {
         if (error) {
             console.error('Error loading hatch pattern:', error);
             return;
