@@ -55,9 +55,37 @@ map.on('style.load', () => {
 // Use a variable to track if initial layers are added
 let initialLayersAdded = false;
 
+// Function to create crosshatch pattern
+function addCrosshatchPattern() {
+    if (map.hasImage('crosshatch-pattern')) {
+        return; // Already loaded
+    }
+    
+    map.loadImage('data/hatch11.png', (error, image) => {
+        if (error) {
+            console.error('Error loading hatch pattern:', error);
+            return;
+        }
+        console.log('Image object structure:', image);
+        console.log('Image properties:', Object.keys(image || {}));
+        
+        // Try different ways to access the image data
+        if (image && image.data) {
+            console.log('Using image.data');
+            map.addImage('crosshatch-pattern', image.data);
+        } else if (image) {
+            console.log('Using image directly');
+            map.addImage('crosshatch-pattern', image);
+        } else {
+            console.error('No valid image data found');
+        }
+    });
+}
+
 map.on('load', () => {
     addVectorLayers();
     initialLayersAdded = true;
+    addCrosshatchPattern();
     
     // // Force globe projection
     // map.setProjection('globe');
@@ -69,7 +97,7 @@ map.on('load', () => {
     // Load the default selected basemap
     const defaultStyle = document.getElementById('map-style-select').value;
     if (defaultStyle && defaultStyle !== 'blank') {
-        loadBasemap(defaultStyle);
+        loadBasemap(defaultStyle, false);
     }
     
     // Change cursor on hover
@@ -87,6 +115,13 @@ map.on('load', () => {
         const visibility = e.target.checked ? 'visible' : 'none';
         if (map.getLayer('blm-all-fill')) {
             map.setLayoutProperty('blm-all-fill', 'visibility', visibility);
+        }
+    });
+    
+    document.getElementById('toggle-population').addEventListener('change', function(e) {
+        const visibility = e.target.checked ? 'visible' : 'none';
+        if (map.getLayer('population-crosshatch')) {
+            map.setLayoutProperty('population-crosshatch', 'visibility', visibility);
         }
     });
     
@@ -485,6 +520,9 @@ async function loadBasemap(styleUrl, preserveView = true) {
             });
         }
         
+        // Re-add crosshatch pattern after style change
+        addCrosshatchPattern();
+        
         if (preserveView && layerStates) {
             restoreLayerStates(layerStates);
         }
@@ -571,6 +609,11 @@ function getCustomSources() {
             type: 'vector',
             url: 'pmtiles://https://pub-fd51620b0a9c4d6c914ebb61f9549df8.r2.dev/fs_sellable_hires.pmtiles',
             attribution: 'USFS Sellable Data'
+        },
+        'population-10plus': {
+            type: 'vector',
+            url: 'pmtiles://https://pub-fd51620b0a9c4d6c914ebb61f9549df8.r2.dev/at_least_10_pop.pmtiles',
+            attribution: 'LandScan Population Data'
         }
     };
 }
@@ -639,11 +682,24 @@ function getCustomLayers() {
                 'visibility': 'none'
             },
             paint: {
-                'text-color': '#ffffff',
-                'text-halo-color': '#989d6c',
-                'text-halo-width': .5
+                'text-color': '#e5e6e0',
+                'text-halo-color': '#6f945b',
+                'text-halo-width': 1
             },
             minzoom: 4
+        },
+        {
+            id: 'population-crosshatch',
+            type: 'fill',
+            source: 'population-10plus',
+            'source-layer': 'at_least_10_pop_dissolved',
+            paint: {
+                'fill-pattern': 'crosshatch-pattern',
+                'fill-opacity': 0.7
+            },
+            layout: {
+                'visibility': 'none'
+            }
         }
     ];
 }
@@ -778,6 +834,21 @@ document.getElementById('fs-sellable-color-text').addEventListener('input', func
             const pip = document.querySelector('#toggle-fs-sellable + label .color-pip');
             if (pip) pip.style.backgroundColor = this.value;
         }
+    }
+});
+
+// Population layer controls
+document.getElementById('population-toggle').addEventListener('change', function(e) {
+    const visibility = e.target.checked ? 'visible' : 'none';
+    if (map.getLayer('population-crosshatch')) {
+        map.setLayoutProperty('population-crosshatch', 'visibility', visibility);
+    }
+});
+
+document.getElementById('population-opacity').addEventListener('input', function(e) {
+    if (map.getLayer('population-crosshatch')) {
+        map.setPaintProperty('population-crosshatch', 'fill-opacity', parseFloat(e.target.value));
+        document.getElementById('population-opacity-value').textContent = e.target.value;
     }
 });
 

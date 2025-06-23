@@ -132,6 +132,17 @@
                 <input type="range" id="fs-sellable-stroke-width" min="0.1" max="5" step="0.1" value="0.1">
                 <span class="range-value" id="fs-sellable-stroke-width-value">0.1</span>
             </div>
+
+            <!-- Population Layer -->
+            <div class="control-item">
+                <input type="checkbox" id="population-toggle">
+                <label for="population-toggle">Population Density (10+)</label>
+            </div>
+            <div class="control-item">
+                <label>Population Opacity</label>
+                <input type="range" id="population-opacity" min="0" max="1" step="0.1" value="0.7">
+                <span class="range-value" id="population-opacity-value">0.7</span>
+            </div>
         </div>
 
         <!-- Terrain Settings -->
@@ -159,8 +170,15 @@
         <span id="about-collapse-icon">+</span>
     </div>
     <div class="about-content">
-        <p>Map by <a href="https://evanapplegate.com" target="_blank">Evan Applegate</a> using Wilderness Society data. For 3D view on mobile two-finger drag up and down, for same on desktop two-finger/middle mouse button click and drag.</p> 
-        <p>Analysis of public lands exposed to sale via Phil Hartger at <a href="https://www.wilderness.org/articles/media-resources/250-million-acres-public-lands-eligible-sale-senr-bill" target="_blank">The Wilderness Society</a> using source data from BLM, USFS, USGS, NPS, and the <a href="https://energy.senate.gov/services/files/DF7B7FBE-9866-4B69-8ACA-C661A4F18096" target="_blank">SENR reconciliation bill text</a> updated June 14th, 2025.</p>
+        <p>Map by <a href="https://evanapplegate.com" target="_blank">Evan Applegate</a> using Wilderness Society data. For 3D view on mobile two-finger drag up and down, for 3D view on desktop two-finger/middle mouse button click and drag. Population data via ORNL LandScan.</p>
+        
+        <p>Context, late June 2025: <a href="https://energy.senate.gov/services/files/DF7B7FBE-9866-4B69-8ACA-C661A4F18096" target="_blank">Senate GOP wants to sell western lands</a> managed by the Forest Service and Bureau of Land Management. 0.5%-0.75% of the land would have to be sold, it would have to be sold quickly, and localities would get right of first refusal.</p>
+        
+        <p>It's ostensibly to let locals manage their neighboring lands and to "address local housing needs." The first part I kinda get, but housing? Public lands aren't commutable. There are no services. And the limiting reagent for American housing isn't land, it's regulation and incumbent homeowners (a new house dilutes their home's value, and all of their wealth is tied up in their house).</p>
+
+        <p>It opens the door to enclosing a uniquely American landscape: public lands are <em>terra who-gives-a-shit.</em> You can hike, camp, off-road, shoot, hunt, fish, and get some money out of them through timber and mineral leases. After these lands are privatized, access will disappear.</p>
+
+        <p>Analysis of public lands potentially exposed to sale via Phil Hartger at <a href="https://www.wilderness.org/articles/media-resources/250-million-acres-public-lands-eligible-sale-senr-bill" target="_blank">The Wilderness Society</a> using source data from BLM, USFS, USGS, NPS, and the <a href="https://energy.senate.gov/services/files/DF7B7FBE-9866-4B69-8ACA-C661A4F18096" target="_blank">SENR reconciliation bill text</a> updated June 14th, 2025.</p>
         
         <p><a href="https://www.dropbox.com/scl/fo/smwyjbbwr9ie5qg3dtuzd/AP10gfeav1spzd-mPAL-k1E?rlkey=q055x4j4kxf29giajlmw11m93&dl=0">Full dataset</a></p>
 
@@ -206,6 +224,13 @@
         <label for="toggle-fs-labels">
             <span class="color-pip text" style="color: #ffffff;">A</span>
             Forest Labels
+        </label>
+    </div>
+    <div class="layer-toggle">
+        <input type="checkbox" id="toggle-population">
+        <label for="toggle-population">
+            <span class="color-pip pattern">⫽</span>
+            Population 10+
         </label>
     </div>
     <div class="layer-toggle">
