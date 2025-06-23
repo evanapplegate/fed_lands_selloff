@@ -585,7 +585,7 @@ function getCustomLayers() {
             id: 'blm-all-fill',
             type: 'fill',
             source: 'blm-all',
-            'source-layer': 'blm_all',
+            'source-layer': 'blm_all_4326',
             paint: {
                 'fill-color': getColor('blm-all-color', '#FFD700'),
                 'fill-opacity': getOpacity('blm-all-opacity', 0.6)
@@ -596,7 +596,7 @@ function getCustomLayers() {
             id: 'fs-all-fill',
             type: 'fill',
             source: 'fs-all',
-            'source-layer': 'fs_all',
+            'source-layer': 'fs_all_4326',
             paint: {
                 'fill-color': getColor('fs-all-color', '#228B22'),
                 'fill-opacity': getOpacity('fs-all-opacity', 0.6)
@@ -618,7 +618,7 @@ function getCustomLayers() {
             id: 'fs-sellable-fill',
             type: 'fill',
             source: 'fs-sellable',
-            'source-layer': 'fs_sellable',
+            'source-layer': 'fs_sellable_4326',
             paint: {
                 'fill-color': getColor('fs-sellable-color', '#126612'),
                 'fill-opacity': getOpacity('fs-sellable-opacity', 0.6)
@@ -629,7 +629,7 @@ function getCustomLayers() {
             id: 'fs-labels',
             type: 'symbol',
             source: 'fs-all',   
-            'source-layer': 'fs_all',
+            'source-layer': 'fs_all_4326',
             layout: {
                 'text-field': ['get', 'FORESTNAME'],
                 'text-font': ['Open Sans Regular'],
