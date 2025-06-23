@@ -164,104 +164,106 @@
 </div>
 
 <!-- About Panel -->
-<div class="about-panel collapsed" id="about-panel">
-    <div class="control-header" onclick="toggleAboutPanel()">
-        <span>About</span>
-        <span id="about-collapse-icon">+</span>
-    </div>
-    <div class="about-content">
-        <p>Map by <a href="https://evanapplegate.com" target="_blank">Evan Applegate</a> using Wilderness Society data. For 3D view on mobile two-finger drag up and down, for 3D view on desktop two-finger/middle mouse button click and drag. Population data via ORNL LandScan.</p>
-        
-        <p>Context, late June 2025: <a href="https://energy.senate.gov/services/files/DF7B7FBE-9866-4B69-8ACA-C661A4F18096" target="_blank">Senate GOP wants to sell western lands</a> managed by the Forest Service and Bureau of Land Management. 0.5%-0.75% of the land would have to be sold, it would have to be sold quickly, and localities would get right of first refusal.</p>
-        
-        <p>It's ostensibly to let locals manage their neighboring lands and to "address local housing needs." The first part I get, but housing? Most public lands aren't commutable. There are no services. And the limiting reagent for affordable housing in western states is definitely not access to land (it's regulation, zoning, and incumbent homeowners).</p>
-
-        <p>Getting 0.5% of western public lands off the fed's books opens the door to enclosing a uniquely American commons: public lands are <em>terra who-gives-a-</em>████. Anyone can hike, camp, off-road, shoot, hunt, fish, maybe get some money out of them through timber and mineral leases.</p>
+<div class="right-panels">
+    <div class="about-panel collapsed" id="about-panel">
+        <div class="control-header" onclick="toggleAboutPanel()">
+            <span>About</span>
+            <span id="about-collapse-icon">+</span>
+        </div>
+        <div class="about-content">
+            <p>Map by <a href="https://evanapplegate.com" target="_blank">Evan Applegate</a> using Wilderness Society data. For 3D view on mobile two-finger drag up and down, for 3D view on desktop two-finger/middle mouse button click and drag. Population data via ORNL LandScan.</p>
             
-        <p>Are they managed well? Not particularly, most are real ratty and often abused. But after these lands are privatized access will disappear. And weighed against efficient use of the land and possibly more housing: it's not worth it.</p>
+            <p>Context, late June 2025: <a href="https://energy.senate.gov/services/files/DF7B7FBE-9866-4B69-8ACA-C661A4F18096" target="_blank">Senate GOP wants to sell western lands</a> managed by the Forest Service and Bureau of Land Management. 0.5%-0.75% of the land would have to be sold, it would have to be sold quickly, and localities would get right of first refusal.</p>
+            
+            <p>It's ostensibly to let locals manage their neighboring lands and to "address local housing needs." The first part I get, but housing? Most public lands aren't commutable. There are no services. And the limiting reagent for affordable housing in western states is definitely not access to land (it's regulation, zoning, and incumbent homeowners).</p>
 
-        <p>Analysis of public lands potentially exposed to sale via Phil Hartger at <a href="https://www.wilderness.org/articles/media-resources/250-million-acres-public-lands-eligible-sale-senr-bill" target="_blank">The Wilderness Society</a> using source data from BLM, USFS, USGS, NPS, and the <a href="https://energy.senate.gov/services/files/DF7B7FBE-9866-4B69-8ACA-C661A4F18096" target="_blank">SENR reconciliation bill text</a> updated June 14th, 2025.</p>
-        
-        <p><a href="https://www.dropbox.com/scl/fo/smwyjbbwr9ie5qg3dtuzd/AP10gfeav1spzd-mPAL-k1E?rlkey=q055x4j4kxf29giajlmw11m93&dl=0">Full dataset</a></p>
+            <p>Getting 0.5% of western public lands off the federal books may be the first step in enclosing a uniquely American commons: public lands are <em>terra who-gives-a-</em>████. Anyone can hike, camp, off-road, shoot, hunt, fish, maybe get some money out of them through timber and mineral leases.</p>
+            
+            <p>Are they managed well? Not particularly, most are real ratty and often abused. But after these lands are privatized access will disappear. And weighed against efficient use of the land and possibly more housing: it's not worth it.</p>
 
-        <p>Methods: These data were created by analyzing which public lands would be eligible for sale based on the criteria in the bill, summarized below, using GIS data for USFS and BLM lands.</p>
-        <p>Disposal mandate in bill (as of June 14, 2025):</p>
-        <ol>
-            <li>Between 0.5-0.75% of all BLM lands and between 0.5-0.75% of all USFS lands (a total of between 2.02 and 3.04 million acres)</li>
-            <li>The secretaries of agriculture and interior will have 30 days to solicit nominations for lands to be sold from "any interested parties" and must publish a list every 60 days of lands eligible for sale until they've reached the quota in the bullet above. The entire sell-off must be completed within 5 years.</li>
-        </ol>
-        <p>Lands eligible for disposal in the bill:</p>
-        <ol>
-            <li>Eligible states: AK, AZ, CA, CO, ID, NV, NM, OR, UT, WA, WY</li>
-            <li>Excludes federally protected land, defined by the bill as:
-                <ul>
-                    <li>National Monument</li>
-                    <li>National Recreation Area</li>
-                    <li>component of the National Wilderness Preservation System</li>
-                    <li>unit of the National Wild and Scenic Rivers System</li>
-                    <li>unit of the National Trails System</li>
-                    <li>National Conservation Area</li>
-                    <li>unit of the National Wildlife Refuge System</li>
-                    <li>unit of the National Fish Hatchery System</li>
-                    <li>unit of the National Park System</li>
-                    <li>National Preserve</li>
-                    <li>National Seashore or National Lakeshore</li>
-                    <li>National Historic Site</li>
-                    <li>National Memorial</li>
-                    <li>National Battlefield</li>
-                    <li>National Battlefield Park</li>
-                    <li>National Battlefield Site</li>
-                    <li>National Military Park</li>
-                    <li>National Historical Park</li>
-                </ul>
-            </li>
-            <li>Excludes lands subject to valid existing rights (understood to mean it excludes lands with property interests like oil and gas leases, rights-of-way or perfected mining claims in existence before the date of enactment of the bill)</li>
-        </ol>
-    </div>
-</div>
+            <p>Analysis of public lands potentially exposed to sale via Phil Hartger at <a href="https://www.wilderness.org/articles/media-resources/250-million-acres-public-lands-eligible-sale-senr-bill" target="_blank">The Wilderness Society</a> using source data from BLM, USFS, USGS, NPS, and the <a href="https://energy.senate.gov/services/files/DF7B7FBE-9866-4B69-8ACA-C661A4F18096" target="_blank">SENR reconciliation bill text</a> updated June 14th, 2025.</p>
+            
+            <p><a href="https://www.dropbox.com/scl/fo/smwyjbbwr9ie5qg3dtuzd/AP10gfeav1spzd-mPAL-k1E?rlkey=q055x4j4kxf29giajlmw11m93&dl=0">Full dataset</a></p>
 
-<div class="layer-controls">
-    <div class="layer-toggle">
-        <input type="checkbox" id="toggle-fs-labels">
-        <label for="toggle-fs-labels">
-            <span class="color-pip text" style="color: #ffffff;">A</span>
-            Forest Labels
-        </label>
+            <p>Methods: These data were created by analyzing which public lands would be eligible for sale based on the criteria in the bill, summarized below, using GIS data for USFS and BLM lands.</p>
+            <p>Disposal mandate in bill (as of June 14, 2025):</p>
+            <ol>
+                <li>Between 0.5-0.75% of all BLM lands and between 0.5-0.75% of all USFS lands (a total of between 2.02 and 3.04 million acres)</li>
+                <li>The secretaries of agriculture and interior will have 30 days to solicit nominations for lands to be sold from "any interested parties" and must publish a list every 60 days of lands eligible for sale until they've reached the quota in the bullet above. The entire sell-off must be completed within 5 years.</li>
+            </ol>
+            <p>Lands eligible for disposal in the bill:</p>
+            <ol>
+                <li>Eligible states: AK, AZ, CA, CO, ID, NV, NM, OR, UT, WA, WY</li>
+                <li>Excludes federally protected land, defined by the bill as:
+                    <ul>
+                        <li>National Monument</li>
+                        <li>National Recreation Area</li>
+                        <li>component of the National Wilderness Preservation System</li>
+                        <li>unit of the National Wild and Scenic Rivers System</li>
+                        <li>unit of the National Trails System</li>
+                        <li>National Conservation Area</li>
+                        <li>unit of the National Wildlife Refuge System</li>
+                        <li>unit of the National Fish Hatchery System</li>
+                        <li>unit of the National Park System</li>
+                        <li>National Preserve</li>
+                        <li>National Seashore or National Lakeshore</li>
+                        <li>National Historic Site</li>
+                        <li>National Memorial</li>
+                        <li>National Battlefield</li>
+                        <li>National Battlefield Park</li>
+                        <li>National Battlefield Site</li>
+                        <li>National Military Park</li>
+                        <li>National Historical Park</li>
+                    </ul>
+                </li>
+                <li>Excludes lands subject to valid existing rights (understood to mean it excludes lands with property interests like oil and gas leases, rights-of-way or perfected mining claims in existence before the date of enactment of the bill)</li>
+            </ol>
+        </div>
     </div>
-    <div class="layer-toggle">
-        <input type="checkbox" id="toggle-population">
-        <label for="toggle-population">
-            <span class="color-pip pattern">⫽</span>
-            Population 10+
-        </label>
-    </div>
-    <div class="layer-toggle">
-        <input type="checkbox" id="toggle-blm-sellable" checked>
-        <label for="toggle-blm-sellable">
-            <span class="color-pip fill" style="background-color: #FFB400;"></span>
-            BLM land, sellable
-        </label>
-    </div>
-    <div class="layer-toggle">
-        <input type="checkbox" id="toggle-blm-all" checked>
-        <label for="toggle-blm-all">
-            <span class="color-pip fill" style="background-color: #FFD700;"></span>
-            BLM land
-        </label>
-    </div>
-    <div class="layer-toggle">
-        <input type="checkbox" id="toggle-fs-sellable" checked>
-        <label for="toggle-fs-sellable">
-            <span class="color-pip fill" style="background-color: #126612;"></span>
-            National Forest land, sellable
-        </label>
-    </div>
-    <div class="layer-toggle">
-        <input type="checkbox" id="toggle-fs-all" checked>
-        <label for="toggle-fs-all">
-            <span class="color-pip fill" style="background-color: #228B22;"></span>
-            National Forest land
-        </label>
+
+    <div class="layer-controls">
+        <div class="layer-toggle">
+            <input type="checkbox" id="toggle-fs-labels">
+            <label for="toggle-fs-labels">
+                <span class="color-pip text" style="color: #ffffff;">A</span>
+                Forest Labels
+            </label>
+        </div>
+        <div class="layer-toggle">
+            <input type="checkbox" id="toggle-population">
+            <label for="toggle-population">
+                <span class="color-pip pattern">⫽</span>
+                Population 10+
+            </label>
+        </div>
+        <div class="layer-toggle">
+            <input type="checkbox" id="toggle-blm-sellable" checked>
+            <label for="toggle-blm-sellable">
+                <span class="color-pip fill" style="background-color: #FFB400;"></span>
+                BLM land, sellable
+            </label>
+        </div>
+        <div class="layer-toggle">
+            <input type="checkbox" id="toggle-blm-all" checked>
+            <label for="toggle-blm-all">
+                <span class="color-pip fill" style="background-color: #FFD700;"></span>
+                BLM land
+            </label>
+        </div>
+        <div class="layer-toggle">
+            <input type="checkbox" id="toggle-fs-sellable" checked>
+            <label for="toggle-fs-sellable">
+                <span class="color-pip fill" style="background-color: #126612;"></span>
+                National Forest land, sellable
+            </label>
+        </div>
+        <div class="layer-toggle">
+            <input type="checkbox" id="toggle-fs-all" checked>
+            <label for="toggle-fs-all">
+                <span class="color-pip fill" style="background-color: #228B22;"></span>
+                National Forest land
+            </label>
+        </div>
     </div>
 </div>
 
